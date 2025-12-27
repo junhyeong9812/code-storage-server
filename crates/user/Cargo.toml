@@ -1,1 +1,40 @@
- 
+# ============================================
+# user 크레이트 Cargo.toml
+# ============================================
+# User 도메인 (Bounded Context)
+# 사용자 인증, 권한 관리 담당
+
+[package]
+name = "user"                  # 크레이트 이름
+version.workspace = true       # 워크스페이스 버전 상속
+edition.workspace = true       # 워크스페이스 에디션 상속
+license.workspace = true       # 워크스페이스 라이선스 상속
+
+# ============================================
+# 의존성
+# ============================================
+
+[dependencies]
+# --------------------------------------------
+# 내부 크레이트 의존성
+# --------------------------------------------
+shared = { path = "../shared" }
+
+# --------------------------------------------
+# 외부 의존성 (워크스페이스에서 버전 상속)
+# --------------------------------------------
+tokio.workspace = true         # 비동기 런타임
+axum.workspace = true          # 웹 프레임워크 (인증 API)
+serde.workspace = true         # 직렬화/역직렬화
+serde_json.workspace = true    # JSON 처리
+sqlx.workspace = true          # 데이터베이스 (사용자 정보 저장)
+thiserror.workspace = true     # 에러 타입 정의
+anyhow.workspace = true        # 에러 처리
+tracing.workspace = true       # 로깅
+uuid.workspace = true          # 사용자 ID 생성
+chrono.workspace = true        # 가입일시, 마지막 로그인
+
+# 참고: 나중에 인증 관련 의존성 추가 예정
+# jsonwebtoken = "9"         # JWT 토큰 생성/검증
+# argon2 = "0.5"             # 비밀번호 해싱
+# tower-http = { version = "0.5", features = ["auth"] }  # 인증 미들웨어

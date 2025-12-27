@@ -1,1 +1,24 @@
- 
+# ============================================
+# shared 크레이트 Cargo.toml
+# ============================================
+# 공유 커널 (Shared Kernel)
+# 모든 도메인에서 공통으로 사용하는 타입, 에러, 유틸리티
+
+[package]
+name = "shared"                # 크레이트 이름 (다른 크레이트에서 이 이름으로 import)
+version.workspace = true       # 워크스페이스 루트의 version 사용 (0.1.0)
+edition.workspace = true       # 워크스페이스 루트의 edition 사용 (2021)
+license.workspace = true       # 워크스페이스 루트의 license 사용 (MIT)
+
+# ============================================
+# 의존성
+# ============================================
+# .workspace = true: 워크스페이스에서 정의한 버전 그대로 사용
+# 버전을 여기서 다시 명시할 필요 없음
+
+[dependencies]
+thiserror.workspace = true     # 커스텀 에러 타입 정의 (#[derive(Error)])
+anyhow.workspace = true        # 간편한 에러 처리 (Result<T, anyhow::Error>)
+serde.workspace = true         # 직렬화 (#[derive(Serialize, Deserialize)])
+uuid.workspace = true          # 고유 ID 생성 (Uuid::new_v4())
+chrono.workspace = true        # 날짜/시간 (DateTime<Utc>)
