@@ -10,29 +10,8 @@
 //   - CommitHash: 커밋 해시 (SHA-1)
 //   - BranchName: 브랜치 이름
 //
-// 예시 (나중에 구현):
-//
-// #[derive(Clone, PartialEq, Eq, Hash)]
-// pub struct RepositoryId(Uuid);
-//
-// impl RepositoryId {
-//     pub fn new() -> Self {
-//         Self(Uuid::new_v4())
-//     }
-// }
-//
-// #[derive(Clone, PartialEq, Eq)]
-// pub struct RepositoryName(String);
-//
-// impl RepositoryName {
-//     pub fn new(name: &str) -> Result<Self, ValidationError> {
-//         // 유효성 검사: 빈 문자열, 특수문자 등
-//         if name.is_empty() {
-//             return Err(ValidationError::Empty);
-//         }
-//         Ok(Self(name.to_string()))
-//     }
-// }
-
-mod repository_name;
 mod repository_id;
+mod repository_name;
+
+pub use repository_id::RepositoryId;
+pub use repository_name::RepositoryName;
