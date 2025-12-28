@@ -1,24 +1,58 @@
-# ============================================
+# =============================================================================
 # shared 크레이트 Cargo.toml
-# ============================================
+# =============================================================================
+#
 # 공유 커널 (Shared Kernel)
-# 모든 도메인에서 공통으로 사용하는 타입, 에러, 유틸리티
+# - 모든 크레이트에서 사용하는 공통 타입
+# - 에러 타입 정의
+# - 유틸리티 함수
+#
+# 의존하는 크레이트: cli, server, core
+# 이 크레이트는 다른 내부 크레이트에 의존하지 않음 (최하위 레이어)
+#
+# 파일 위치: crates/shared/Cargo.toml
+# =============================================================================
 
 [package]
-name = "shared"                # 크레이트 이름 (다른 크레이트에서 이 이름으로 import)
-version.workspace = true       # 워크스페이스 루트의 version 사용 (0.1.0)
-edition.workspace = true       # 워크스페이스 루트의 edition 사용 (2021)
-license.workspace = true       # 워크스페이스 루트의 license 사용 (MIT)
+# -----------------------------------------------------------------------------
+# 패키지 기본 정보
+# -----------------------------------------------------------------------------
+# 크레이트 이름: 다른 크레이트에서 use shared::... 로 사용
+name = "shared"
 
-# ============================================
+# .workspace = true: 워크스페이스 루트에서 값 상속
+# workspace.package.version = "0.1.0" 을 그대로 사용
+version.workspace = true    # "0.1.0"
+edition.workspace = true    # "2021"
+
+# -----------------------------------------------------------------------------
 # 의존성
-# ============================================
-# .workspace = true: 워크스페이스에서 정의한 버전 그대로 사용
-# 버전을 여기서 다시 명시할 필요 없음
+# -----------------------------------------------------------------------------
+# .workspace = true: 워크스페이스에서 정의한 버전 사용
+# 버전을 여기서 명시하지 않아도 됨
 
 [dependencies]
-thiserror.workspace = true     # 커스텀 에러 타입 정의 (#[derive(Error)])
-anyhow.workspace = true        # 간편한 에러 처리 (Result<T, anyhow::Error>)
-serde.workspace = true         # 직렬화 (#[derive(Serialize, Deserialize)])
-uuid.workspace = true          # 고유 ID 생성 (Uuid::new_v4())
-chrono.workspace = true        # 날짜/시간 (DateTime<Utc>)
+# 에러 타입 정의용
+# #[derive(Error)] 매크로 제공
+# 예: #[error("Not found: {0}")] NotFound(String)
+thiserror.workspace = true
+
+# 간편한 에러 처리
+# Result<T, anyhow::Error> 타입 제공
+# .context() 메서드로 에러에 추가 정보 첨부
+anyhow.workspace = true
+
+# 직렬화/역직렬화
+# 공통 타입들을 JSON으로 변환할 때 필요
+# #[derive(Serialize, Deserialize)]
+serde.workspace = true
+
+# UUID 타입
+# Id 타입의 실제 구현체
+# new_id() 함수에서 Uuid::new_v4() 사용
+uuid.workspace = true
+
+# 날짜/시간 타입
+# Timestamp 타입의 실제 구현체
+# now() 함수에서 Utc::now() 사용
+chrono.workspace = true
