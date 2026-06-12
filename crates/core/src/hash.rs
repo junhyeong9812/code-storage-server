@@ -48,7 +48,7 @@ const BUFFER_SIZE: usize = 8 * 1024;
 /// 바이트 배열, 문자열, 파일 등을 해싱
 ///
 /// # Example
-/// ```
+/// ```no_run
 /// use core::hash::Hasher;
 ///
 /// let hasher = Hasher::new();
@@ -59,7 +59,7 @@ const BUFFER_SIZE: usize = 8 * 1024;
 /// // 문자열 해싱
 /// let hash = hasher.hash_str("hello");
 ///
-/// // 파일 해싱
+/// // 파일 해싱 (실제 파일이 필요하므로 no_run)
 /// let hash = hasher.hash_file("path/to/file").unwrap();
 /// ```
 #[derive(Debug, Clone, Default)]
@@ -87,6 +87,8 @@ impl Hasher {
     ///
     /// # Example
     /// ```
+    /// use core::hash::Hasher;
+    /// let hasher = Hasher::new();
     /// let hash = hasher.hash_bytes(b"hello world");
     /// assert_eq!(hash.len(), 64);
     /// ```
@@ -126,8 +128,13 @@ impl Hasher {
     /// * `Err` - 파일 읽기 실패
     ///
     /// # Example
-    /// ```
+    /// ```no_run
+    /// # fn main() -> std::io::Result<()> {
+    /// use core::hash::Hasher;
+    /// let hasher = Hasher::new();
     /// let hash = hasher.hash_file("large_file.bin")?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn hash_file<P: AsRef<Path>>(&self, path: P) -> std::io::Result<String> {
         let file = File::open(path)?;
@@ -167,6 +174,8 @@ impl Hasher {
     ///
     /// # Example
     /// ```
+    /// use core::hash::Hasher;
+    /// let hasher = Hasher::new();
     /// let data = b"hello";
     /// let hash = hasher.hash_bytes(data);
     ///

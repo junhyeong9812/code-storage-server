@@ -52,8 +52,9 @@ pub enum AppError {
     ///
     /// # Example
     /// ```
-    /// AppError::NotFound("User abc123".to_string())
-    /// // Display: "Not found: User abc123"
+    /// use shared::error::AppError;
+    /// let err = AppError::NotFound("User abc123".to_string());
+    /// assert_eq!(err.to_string(), "Not found: User abc123");
     /// ```
     #[error("Not found: {0}")]
     NotFound(String),  // 튜플 variant: 필드 이름 없이 타입만
@@ -113,11 +114,12 @@ pub enum AppError {
     ///
     /// # Example
     /// ```
-    /// AppError::HashMismatch {
+    /// use shared::error::AppError;
+    /// let err = AppError::HashMismatch {
     ///     expected: "abc123".to_string(),
     ///     actual: "def456".to_string(),
-    /// }
-    /// // Display: "Hash mismatch: expected abc123, got def456"
+    /// };
+    /// assert_eq!(err.to_string(), "Hash mismatch: expected abc123, got def456");
     /// ```
     #[error("Hash mismatch: expected {expected}, got {actual}")]
     HashMismatch {  // 구조체 variant: named fields

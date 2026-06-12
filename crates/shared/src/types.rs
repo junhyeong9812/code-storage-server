@@ -44,6 +44,7 @@ use uuid::Uuid;                // UUID 타입
 ///
 /// # Example
 /// ```
+/// use shared::types::{new_id, Id};
 /// let id: Id = new_id();
 /// println!("{}", id);  // "550e8400-e29b-41d4-a716-446655440000"
 /// ```
@@ -57,6 +58,7 @@ pub type Id = Uuid;
 ///
 /// # Example
 /// ```
+/// use shared::types::{now, Timestamp};
 /// let timestamp: Timestamp = now();
 /// println!("{}", timestamp);  // "2024-01-15T10:30:00Z"
 /// ```

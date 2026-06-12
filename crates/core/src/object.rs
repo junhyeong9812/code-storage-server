@@ -67,7 +67,7 @@ impl std::fmt::Display for ObjectType {
 /// use core::object::Blob;
 ///
 /// let content = b"hello world";
-/// let blob = Blob::new(content.to_vec());
+/// let mut blob = Blob::new(content.to_vec());
 ///
 /// println!("Hash: {}", blob.hash());
 /// println!("Size: {} bytes", blob.size());

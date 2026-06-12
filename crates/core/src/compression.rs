@@ -84,11 +84,16 @@ pub fn compress(data: &[u8]) -> Result<Vec<u8>> {
 /// use core::compression::compress_with_level;
 /// use flate2::Compression;
 ///
+/// # fn main() -> std::io::Result<()> {
+/// let data = b"hello world hello world";
+///
 /// // 빠른 압축 (압축률 낮음)
 /// let fast = compress_with_level(data, Compression::fast())?;
 ///
 /// // 최대 압축 (느리지만 작음)
 /// let best = compress_with_level(data, Compression::best())?;
+/// # Ok(())
+/// # }
 /// ```
 pub fn compress_with_level(data: &[u8], level: Compression) -> Result<Vec<u8>> {
     // ZlibEncoder: zlib 형식 압축기
@@ -118,11 +123,14 @@ pub fn compress_with_level(data: &[u8], level: Compression) -> Result<Vec<u8>> {
 /// ```
 /// use core::compression::{compress, decompress};
 ///
+/// # fn main() -> std::io::Result<()> {
 /// let original = b"hello world";
 /// let compressed = compress(original)?;
 /// let restored = decompress(&compressed)?;
 ///
 /// assert_eq!(original.as_slice(), restored.as_slice());
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # 에러 케이스
@@ -148,8 +156,14 @@ pub fn decompress(data: &[u8]) -> Result<Vec<u8>> {
 ///
 /// # Example
 /// ```
+/// use core::compression::{compress, decompress_with_limit};
+///
+/// # fn main() -> std::io::Result<()> {
+/// let compressed = compress(b"some data")?;
 /// // 최대 10MB로 제한
 /// let result = decompress_with_limit(&compressed, 10 * 1024 * 1024)?;
+/// # Ok(())
+/// # }
 /// ```
 pub fn decompress_with_limit(data: &[u8], max_size: usize) -> Result<Vec<u8>> {
     let decoder = ZlibDecoder::new(data);
@@ -185,6 +199,10 @@ pub fn decompress_with_limit(data: &[u8], max_size: usize) -> Result<Vec<u8>> {
 ///
 /// # Example
 /// ```
+/// use core::compression::compression_ratio;
+///
+/// let original_size = 1000;
+/// let compressed_size = 400;
 /// let ratio = compression_ratio(original_size, compressed_size);
 /// println!("압축률: {:.1}%", ratio * 100.0);
 /// ```
