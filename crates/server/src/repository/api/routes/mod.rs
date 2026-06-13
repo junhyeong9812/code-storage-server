@@ -34,4 +34,12 @@ pub fn routes() -> Router<AppState> {
         .route("/repositories/:id/push", post(handlers::push_handler))
         // Pull: 객체 번들 다운로드
         .route("/repositories/:id/pull", get(handlers::pull_handler))
+        // 브라우징(읽기) — Web UI
+        .route("/repositories/:id/branches", get(handlers::branches_handler))
+        .route("/repositories/:id/commits", get(handlers::commits_handler))
+        .route(
+            "/repositories/:id/tree/:commit_hash",
+            get(handlers::tree_handler),
+        )
+        .route("/repositories/:id/blob/:hash", get(handlers::blob_handler))
 }

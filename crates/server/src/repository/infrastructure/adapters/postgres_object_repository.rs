@@ -19,7 +19,9 @@ use shared::error::AppError;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::repository::domain::ports::{CommitRecord, ObjectRepository, TreeEntryRecord};
+use crate::repository::domain::ports::{
+    BranchHead, CommitRecord, ObjectRepository, TreeEntryRecord,
+};
 use crate::repository::domain::value_objects::RepositoryId;
 
 fn db_err(err: sqlx::Error) -> AppError {
@@ -342,5 +344,29 @@ impl ObjectRepository for PgObjectRepository {
         .await
         .map_err(db_err)?;
         Ok(hash)
+    }
+
+    async fn list_branches(
+        &self,
+        repository_id: RepositoryId,
+    ) -> Result<Vec<BranchHead>, AppError> {
+        let rows: Vec<(String, String)> = sqlx::query_as(
+            r#"
+            SELECT br.name, c.hash
+            FROM branches br
+            JOIN commits c ON c.id = br.head_commit_id
+            WHERE br.repository_id = $1
+            ORDER BY br.name
+            "#,
+        )
+        .bind(repository_id.as_uuid())
+        .fetch_all(&self.pool)
+        .await
+        .map_err(db_err)?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(name, commit_hash)| BranchHead { name, commit_hash })
+            .collect())
     }
 }

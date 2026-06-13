@@ -22,6 +22,7 @@ pub mod repository;
 pub mod user;
 
 use axum::{routing::get, Router};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
 use crate::state::AppState;
@@ -35,6 +36,8 @@ pub fn app(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health))
         .nest("/api", api)
+        // Web UI(Vite 개발서버 :5173)에서의 교차 출처 요청 허용
+        .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

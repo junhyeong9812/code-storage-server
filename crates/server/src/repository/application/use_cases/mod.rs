@@ -17,6 +17,7 @@
 // 파일 위치: crates/server/src/repository/application/use_cases/mod.rs
 // =============================================================================
 
+pub mod browse;
 pub mod create_repository;
 pub mod delete_repository;
 pub mod get_repository;
@@ -24,6 +25,7 @@ pub mod list_repositories;
 pub mod pull;
 pub mod push;
 
+pub use browse::{browse_tree, list_branches, list_commits, read_blob};
 pub use create_repository::create_repository;
 pub use delete_repository::delete_repository;
 pub use get_repository::get_repository;

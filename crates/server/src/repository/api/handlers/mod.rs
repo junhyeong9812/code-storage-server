@@ -21,9 +21,13 @@ use shared::protocol::{PullResponse, PushRequest, PushResponse};
 use uuid::Uuid;
 
 use crate::error::ApiError;
-use crate::repository::application::dto::{CreateRepositoryRequest, RepositoryResponse};
+use crate::repository::application::dto::{
+    BlobContentDto, BranchDto, CommitSummary, CreateRepositoryRequest, RepositoryResponse,
+    TreeEntryDto,
+};
 use crate::repository::application::use_cases::{
-    create_repository, delete_repository, get_repository, list_repositories, pull, push,
+    browse_tree, create_repository, delete_repository, get_repository, list_branches,
+    list_commits, list_repositories, pull, push, read_blob,
 };
 use crate::repository::domain::value_objects::{RepositoryId, UserId};
 use crate::state::AppState;
@@ -119,4 +123,76 @@ pub async fn pull_handler(
 async fn ensure_repo_exists(state: &AppState, id: Uuid) -> Result<(), ApiError> {
     get_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
     Ok(())
+}
+
+// -----------------------------------------------------------------------------
+// 브라우징(읽기) 핸들러 — Web UI 용
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Deserialize)]
+pub struct CommitsQuery {
+    #[serde(default = "default_branch")]
+    pub branch: String,
+    #[serde(default = "default_limit")]
+    pub limit: usize,
+}
+
+fn default_limit() -> usize {
+    50
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TreeQuery {
+    #[serde(default)]
+    pub path: String,
+}
+
+/// GET /api/repositories/:id/branches
+pub async fn branches_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<Vec<BranchDto>>, ApiError> {
+    let branches = list_branches(state.objects.as_ref(), RepositoryId::from_uuid(id)).await?;
+    Ok(Json(branches.into_iter().map(Into::into).collect()))
+}
+
+/// GET /api/repositories/:id/commits?branch=&limit=
+pub async fn commits_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Query(query): Query<CommitsQuery>,
+) -> Result<Json<Vec<CommitSummary>>, ApiError> {
+    let commits = list_commits(
+        state.objects.as_ref(),
+        RepositoryId::from_uuid(id),
+        &query.branch,
+        query.limit,
+    )
+    .await?;
+    Ok(Json(commits.into_iter().map(Into::into).collect()))
+}
+
+/// GET /api/repositories/:id/tree/:commit_hash?path=
+pub async fn tree_handler(
+    State(state): State<AppState>,
+    Path((id, commit_hash)): Path<(Uuid, String)>,
+    Query(query): Query<TreeQuery>,
+) -> Result<Json<Vec<TreeEntryDto>>, ApiError> {
+    let entries = browse_tree(
+        state.objects.as_ref(),
+        RepositoryId::from_uuid(id),
+        &commit_hash,
+        &query.path,
+    )
+    .await?;
+    Ok(Json(entries.into_iter().map(Into::into).collect()))
+}
+
+/// GET /api/repositories/:id/blob/:hash
+pub async fn blob_handler(
+    State(state): State<AppState>,
+    Path((id, hash)): Path<(Uuid, String)>,
+) -> Result<Json<BlobContentDto>, ApiError> {
+    let bytes = read_blob(state.blobs.as_ref(), RepositoryId::from_uuid(id), &hash).await?;
+    Ok(Json(BlobContentDto::from_bytes(hash, bytes)))
 }

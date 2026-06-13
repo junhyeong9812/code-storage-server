@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 use shared::types::{Id, Timestamp};
 
 use crate::repository::domain::entities::Repository;
+use crate::repository::domain::ports::{BranchHead, CommitRecord, TreeEntryRecord};
 
 /// 저장소 생성 요청
 #[derive(Debug, Deserialize)]
@@ -55,6 +56,101 @@ impl From<Repository> for RepositoryResponse {
             is_private: repo.is_private(),
             created_at: repo.created_at(),
             updated_at: repo.updated_at(),
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 브라우징(읽기) DTO — Web UI 용
+// -----------------------------------------------------------------------------
+
+/// 브랜치 요약
+#[derive(Debug, Serialize)]
+pub struct BranchDto {
+    pub name: String,
+    pub head_commit: String,
+}
+
+impl From<BranchHead> for BranchDto {
+    fn from(b: BranchHead) -> Self {
+        Self {
+            name: b.name,
+            head_commit: b.commit_hash,
+        }
+    }
+}
+
+/// 커밋 요약
+#[derive(Debug, Serialize)]
+pub struct CommitSummary {
+    pub hash: String,
+    pub message: String,
+    pub author_name: String,
+    pub author_email: String,
+    pub timestamp: String,
+    pub parent_hash: Option<String>,
+}
+
+impl From<CommitRecord> for CommitSummary {
+    fn from(c: CommitRecord) -> Self {
+        Self {
+            hash: c.hash,
+            message: c.message,
+            author_name: c.author_name,
+            author_email: c.author_email,
+            timestamp: c.timestamp,
+            parent_hash: c.parent_hash,
+        }
+    }
+}
+
+/// 트리 엔트리
+#[derive(Debug, Serialize)]
+pub struct TreeEntryDto {
+    pub name: String,
+    pub object_type: String,
+    pub hash: String,
+    pub mode: String,
+}
+
+impl From<TreeEntryRecord> for TreeEntryDto {
+    fn from(e: TreeEntryRecord) -> Self {
+        Self {
+            name: e.name,
+            object_type: e.object_type,
+            hash: e.child_hash,
+            mode: e.mode,
+        }
+    }
+}
+
+/// blob 내용
+#[derive(Debug, Serialize)]
+pub struct BlobContentDto {
+    pub hash: String,
+    pub size: usize,
+    /// UTF-8 텍스트면 true
+    pub is_text: bool,
+    /// 텍스트면 내용, 바이너리면 빈 문자열
+    pub content: String,
+}
+
+impl BlobContentDto {
+    pub fn from_bytes(hash: String, bytes: Vec<u8>) -> Self {
+        let size = bytes.len();
+        match String::from_utf8(bytes) {
+            Ok(text) => Self {
+                hash,
+                size,
+                is_text: true,
+                content: text,
+            },
+            Err(_) => Self {
+                hash,
+                size,
+                is_text: false,
+                content: String::new(),
+            },
         }
     }
 }

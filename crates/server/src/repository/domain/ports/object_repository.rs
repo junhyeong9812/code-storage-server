@@ -25,6 +25,13 @@ pub struct TreeEntryRecord {
     pub child_hash: String,
 }
 
+/// 브랜치 head (이름 + 커밋 해시)
+#[derive(Debug, Clone)]
+pub struct BranchHead {
+    pub name: String,
+    pub commit_hash: String,
+}
+
 /// 커밋 레코드 (저장/조회 공용)
 #[derive(Debug, Clone)]
 pub struct CommitRecord {
@@ -91,4 +98,10 @@ pub trait ObjectRepository: Send + Sync {
         repository_id: RepositoryId,
         branch: &str,
     ) -> Result<Option<String>, AppError>;
+
+    /// 저장소의 모든 브랜치 (이름 + head 커밋 해시)
+    async fn list_branches(
+        &self,
+        repository_id: RepositoryId,
+    ) -> Result<Vec<BranchHead>, AppError>;
 }

@@ -10,4 +10,4 @@ pub mod object_repository;
 pub use repository_repository::RepositoryRepository;
 pub use commit_repository::CommitRepository;
 pub use blob_storage::BlobStorage;
-pub use object_repository::{CommitRecord, ObjectRepository, TreeEntryRecord};
+pub use object_repository::{BranchHead, CommitRecord, ObjectRepository, TreeEntryRecord};
