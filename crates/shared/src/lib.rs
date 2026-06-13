@@ -33,3 +33,7 @@ pub mod error;
 /// - new_id(): 새 UUID 생성
 /// - now(): 현재 시간 반환
 pub mod types;
+
+/// Push/Pull 와이어 프로토콜 타입들
+/// - 서버와 CLI 가 공유하는 객체 번들/요청/응답 DTO
+pub mod protocol;
