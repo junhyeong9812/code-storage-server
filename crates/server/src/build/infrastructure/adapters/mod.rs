@@ -1,7 +1,9 @@
 // =============================================================================
-// Build 어댑터
+// Build 어댑터 (adapters/mod.rs)
 // =============================================================================
 
-// TODO: 구현 예정
-// - PostgresBuildAdapter
-// - DockerBuildRunner
+pub mod postgres_build_repository;
+pub mod shell_build_runner;
+
+pub use postgres_build_repository::PgBuildRepository;
+pub use shell_build_runner::ShellBuildRunner;
