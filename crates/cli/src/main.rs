@@ -1,14 +1,24 @@
 // =============================================================================
-// CTS CLI 진입점
+// CTS CLI 진입점 (main.rs)
 // =============================================================================
 //
 // 사용법:
-//   cts init
-//   cts add <file>
-//   cts commit -m "message"
-//   cts push
-//   cts pull
+//   cts init [path]          # 저장소 초기화
+//   cts add <file>...        # 파일 스테이징
+//   cts commit -m "message"  # 커밋 생성
+//   cts status               # 상태 확인
+//   cts log                  # 커밋 히스토리
+//   cts push / pull / clone  # 서버 연동 (Phase 4)
+//
+// 파일 위치: crates/cli/src/main.rs
+// =============================================================================
 
+mod config;
+mod commands;
+mod index;
+mod repo;
+
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -22,7 +32,10 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Initialize a new repository
-    Init,
+    Init {
+        /// Optional directory to create and initialize
+        path: Option<String>,
+    },
     /// Add file(s) to staging
     Add {
         /// Files to add
@@ -49,41 +62,33 @@ enum Commands {
     Status,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Init => {
-            println!("Initializing repository...");
-            // TODO: 구현
-        }
+        Commands::Init { path } => commands::init::run(path)?,
         Commands::Add { files } => {
-            println!("Adding files: {:?}", files);
-            // TODO: 구현
+            let _ = files;
+            todo_phase("add", 3);
         }
         Commands::Commit { message } => {
-            println!("Creating commit: {}", message);
-            // TODO: 구현
+            let _ = message;
+            todo_phase("commit", 3);
         }
-        Commands::Push => {
-            println!("Pushing to remote...");
-            // TODO: 구현
-        }
-        Commands::Pull => {
-            println!("Pulling from remote...");
-            // TODO: 구현
-        }
+        Commands::Status => todo_phase("status", 3),
+        Commands::Log => todo_phase("log", 3),
+        Commands::Push => todo_phase("push", 4),
+        Commands::Pull => todo_phase("pull", 4),
         Commands::Clone { url } => {
-            println!("Cloning from: {}", url);
-            // TODO: 구현
-        }
-        Commands::Log => {
-            println!("Showing log...");
-            // TODO: 구현
-        }
-        Commands::Status => {
-            println!("Showing status...");
-            // TODO: 구현
+            let _ = url;
+            todo_phase("clone", 4);
         }
     }
+
+    Ok(())
+}
+
+/// 아직 구현되지 않은 명령 안내
+fn todo_phase(name: &str, phase: u8) {
+    eprintln!("'cts {name}' 은 아직 구현되지 않았습니다 (Phase {phase}).");
 }
