@@ -49,4 +49,3 @@ CREATE TABLE repository_collaborators (
 - 저장소 목록(list)에는 공개+소유 저장소만 노출(협업 중인 비공개는 직접 URL 로 접근).
   → 추후 "내가 협업 중인 저장소" 목록 추가 여지.
 - 협업자 본인의 역할 조회/탈퇴 엔드포인트 없음.
-</content>

@@ -36,4 +36,3 @@ CREATE TABLE revoked_tokens (
 ## 한계 / 후속
 - 단일 기기/토큰 단위 철회만(전체 세션 무효화 X). 만료 행 정리(cron) 미구현.
 - access/refresh 회전 없음(사용자 선택) — 토큰 수명은 30일 고정.
-</content>

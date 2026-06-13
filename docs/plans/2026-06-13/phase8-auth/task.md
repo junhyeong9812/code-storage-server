@@ -47,4 +47,3 @@
 - Web UI 는 로그인 없이 공개 저장소만 조회(설계상). 비공개/쓰기 UI 없음.
 - 시드 testuser(init.sql)는 더 이상 사용 안 함(로그인 불가 dummy 해시) — 무해.
 - repo 협업자(read/write 공유) 개념 없음 — 소유자 단독.
-</content>

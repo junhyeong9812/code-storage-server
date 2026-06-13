@@ -70,4 +70,3 @@
 - README 로드맵 Phase 2 체크 표시 + 아키텍처 §6 API 보완.
 - Phase 3(CLI: init/add/commit) 착수.
 - (선택) 변경사항 커밋.
-</content>

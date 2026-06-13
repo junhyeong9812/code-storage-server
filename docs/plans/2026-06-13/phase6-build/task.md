@@ -36,4 +36,3 @@
 - 샌드박스 없음(서버에서 직접 셸 실행). 격리 필요 시 DockerBuildRunner.
 - 동기 실행(요청이 빌드 완료까지 대기). 트리거 자동화(push 시 자동 빌드) 없음.
 - Phase 7: Web UI — 저장소/커밋/빌드 브라우징(frontend Vite+React).
-</content>

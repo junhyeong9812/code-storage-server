@@ -44,4 +44,3 @@
 ## 다음
 - Phase 4: Push/Pull (서버 연동) — config.remote, blob/tree/commit 업로드·다운로드.
   - 매핑 이슈: tree_entries.mode vs core mode, commits.committed_at(TZ) vs timestamp(String).
-</content>

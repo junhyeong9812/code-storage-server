@@ -38,4 +38,3 @@ CLI ↔ Server 통합. 로컬 객체를 서버에 올리고(push) 받아오는(p
 - 협상 없음(매 push 마다 closure 전송, 서버가 ON CONFLICT 로 스킵). 효율보다 단순함.
 - 인증 없음(시드 유저 owner). fast-forward 검사 없음 → Phase 5(브랜치)에서 보완 여지.
 - Phase 5: 브랜치 관리(`cts branch`/`checkout`), 서버 멀티 브랜치 push/pull.
-</content>

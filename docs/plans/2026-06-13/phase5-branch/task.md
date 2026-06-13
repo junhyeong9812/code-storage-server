@@ -30,4 +30,3 @@
 - fast-forward/머지 없음. 브랜치 삭제(`branch -d`) 미구현.
 - 원격 브랜치 자동 추적/목록 미구현(현재 브랜치만 pull).
 - Phase 6: Build (CI/CD) — builds 테이블/도메인 활용, 커밋 빌드 실행.
-</content>

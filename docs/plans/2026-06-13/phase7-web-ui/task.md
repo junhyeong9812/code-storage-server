@@ -33,4 +33,3 @@
 ## 로드맵 완료
 Phase 1~7 모두 완료. (Core / Server CRUD / CLI 로컬 / Push·Pull / Branch /
 Build / Web UI)
-</content>
