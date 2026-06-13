@@ -15,10 +15,12 @@ impl Email {
         let email = raw.into();
         let trimmed = email.trim();
         let valid = trimmed.len() <= 255
+            && !trimmed.contains(char::is_whitespace)
             && trimmed.split_once('@').is_some_and(|(local, domain)| {
-                !local.is_empty() && domain.contains('.') && !domain.starts_with('.')
+                !local.is_empty()
+                    && domain.contains('.')
+                    && !domain.starts_with('.')
                     && !domain.ends_with('.')
-                    && !domain.contains(' ')
             });
         if !valid {
             return Err(AppError::InvalidInput(format!("유효하지 않은 이메일: {trimmed}")));
