@@ -9,7 +9,7 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::auth::{require_owner, require_read, AuthUser, MaybeAuthUser};
+use crate::auth::{require_read, require_write, AuthUser, MaybeAuthUser};
 use crate::build::application::dto::{BuildResponse, TriggerBuildRequest};
 use crate::build::application::use_cases::{get_build, get_build_log, list_builds, run_build};
 use crate::build::domain::value_objects::BuildId;
@@ -23,7 +23,7 @@ pub async fn trigger_handler(
     auth: AuthUser,
     Json(request): Json<TriggerBuildRequest>,
 ) -> Result<(StatusCode, Json<BuildResponse>), ApiError> {
-    require_owner(&state, repo_id, &auth).await?;
+    require_write(&state, repo_id, &auth).await?;
     let build = run_build(
         state.builds.as_ref(),
         state.build_runner.as_ref(),

@@ -10,7 +10,9 @@
 use std::sync::Arc;
 
 use crate::build::domain::ports::{BuildRepository, BuildRunner};
-use crate::repository::domain::ports::{BlobStorage, ObjectRepository, RepositoryRepository};
+use crate::repository::domain::ports::{
+    BlobStorage, CollaboratorRepository, ObjectRepository, RepositoryRepository,
+};
 use crate::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
 
 /// 핸들러에 주입되는 공유 상태
@@ -18,6 +20,8 @@ use crate::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
 pub struct AppState {
     /// 저장소 메타데이터 영속화 포트
     pub repositories: Arc<dyn RepositoryRepository>,
+    /// 협업자 영속화 포트
+    pub collaborators: Arc<dyn CollaboratorRepository>,
     /// 객체 그래프(blob메타/tree/commit/branch) 영속화 포트
     pub objects: Arc<dyn ObjectRepository>,
     /// Blob 내용 저장소 포트

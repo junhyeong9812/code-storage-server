@@ -20,7 +20,7 @@ use serde::Deserialize;
 use shared::protocol::{PullResponse, PushRequest, PushResponse};
 use uuid::Uuid;
 
-use crate::auth::{require_owner, require_read, AuthUser, MaybeAuthUser};
+use crate::auth::{require_owner, require_read, require_write, AuthUser, MaybeAuthUser};
 use crate::error::ApiError;
 use crate::repository::application::dto::{
     BlobContentDto, BranchDto, CommitSummary, CreateRepositoryRequest, RepositoryResponse,
@@ -91,14 +91,14 @@ fn default_branch() -> String {
     "main".to_string()
 }
 
-/// POST /api/repositories/:id/push — 객체 번들 업로드 + 브랜치 갱신 (소유자만)
+/// POST /api/repositories/:id/push — 객체 번들 업로드 + 브랜치 갱신 (쓰기 권한)
 pub async fn push_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     auth: AuthUser,
     Json(request): Json<PushRequest>,
 ) -> Result<Json<PushResponse>, ApiError> {
-    require_owner(&state, id, &auth).await?;
+    require_write(&state, id, &auth).await?;
     let response = push(
         state.objects.as_ref(),
         state.blobs.as_ref(),

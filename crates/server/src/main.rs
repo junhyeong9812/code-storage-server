@@ -22,9 +22,11 @@ use tracing_subscriber::EnvFilter;
 
 use server::build::domain::ports::{BuildRepository, BuildRunner};
 use server::build::infrastructure::adapters::{PgBuildRepository, ShellBuildRunner};
-use server::repository::domain::ports::{BlobStorage, ObjectRepository, RepositoryRepository};
+use server::repository::domain::ports::{
+    BlobStorage, CollaboratorRepository, ObjectRepository, RepositoryRepository,
+};
 use server::repository::infrastructure::adapters::{
-    FileBlobStorage, PgObjectRepository, PgRepositoryRepository,
+    FileBlobStorage, PgCollaboratorRepository, PgObjectRepository, PgRepositoryRepository,
 };
 use server::state::AppState;
 use server::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
@@ -60,6 +62,8 @@ async fn main() -> anyhow::Result<()> {
 
     let repositories: Arc<dyn RepositoryRepository> =
         Arc::new(PgRepositoryRepository::new(pool.clone()));
+    let collaborators: Arc<dyn CollaboratorRepository> =
+        Arc::new(PgCollaboratorRepository::new(pool.clone()));
     let objects: Arc<dyn ObjectRepository> = Arc::new(PgObjectRepository::new(pool.clone()));
     let blobs: Arc<dyn BlobStorage> = Arc::new(FileBlobStorage::new(storage_path.clone()));
     let builds: Arc<dyn BuildRepository> = Arc::new(PgBuildRepository::new(pool.clone()));
@@ -81,6 +85,7 @@ async fn main() -> anyhow::Result<()> {
 
     let state = AppState {
         repositories,
+        collaborators,
         objects,
         blobs,
         builds,
