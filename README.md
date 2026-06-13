@@ -18,17 +18,19 @@ Git 프로토콜이나 라이브러리에 의존하지 않고, 자체 프로토�
 
 ### CLI (`cts`)
 ```bash
-cts init                 # 저장소 초기화
-cts add <file>           # 파일 스테이징
-cts commit -m "message"  # 커밋 생성
-cts branch [name]        # 브랜치 목록 / 생성
-cts checkout [-b] <br>   # 브랜치 전환 (-b: 생성 후 전환)
-cts log                  # 커밋 히스토리
-cts status               # 현재 상태
-cts remote <url> <name>  # 원격 설정 (서버에 저장소 생성)
-cts push                 # 서버에 푸시
-cts pull                 # 서버에서 풀
-cts clone <url>          # 저장소 복제
+cts init                       # 저장소 초기화
+cts add <file>                 # 파일 스테이징
+cts commit -m "message"        # 커밋 생성
+cts branch [name]              # 브랜치 목록 / 생성
+cts checkout [-b] <br>         # 브랜치 전환 (-b: 생성 후 전환)
+cts log                        # 커밋 히스토리
+cts status                     # 현재 상태
+cts register <url> <user> <email>  # 회원가입 (서버)
+cts login <url> <user>             # 로그인 (토큰 저장)
+cts remote <url> <name>        # 원격 설정 (서버에 저장소 생성)
+cts push                       # 서버에 푸시 (소유자만)
+cts pull                       # 서버에서 풀
+cts clone <url>                # 저장소 복제
 ```
 
 ### Server
@@ -98,16 +100,20 @@ cargo run -p server
 # 3. CLI 설치
 cargo install --path crates/cli
 
-# 4. 사용
+# 4. 인증 (서버 연동 전 1회)
+cts register http://127.0.0.1:8080 alice alice@example.com   # 또는 cts login ...
+#   (비밀번호 프롬프트. 비대화 환경은 CTS_PASSWORD 환경변수 사용)
+
+# 5. 사용
 cts init my-project
 cd my-project
 echo "hello" > hello.txt
 cts add hello.txt
 cts commit -m "first commit"
 cts remote http://127.0.0.1:8080 my-project   # 서버에 저장소 생성 + 원격 설정
-cts push
+cts push                                       # 본인 소유 저장소에만 push
 
-# 5. Web UI (코드 브라우저)
+# 6. Web UI (코드 브라우저 — 공개 저장소)
 cd frontend
 npm install
 npm run dev            # http://localhost:5173 (서버 API 는 127.0.0.1:8080)
@@ -134,6 +140,7 @@ curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
 - [x] Phase 5: Branch (브랜치 관리)
 - [x] Phase 6: Build (CI/CD)
 - [x] Phase 7: Web UI
+- [x] Phase 8: 인증/인가 (User) — JWT 로그인, 공개읽기 + 소유자쓰기
 
 ## 라이선스
 

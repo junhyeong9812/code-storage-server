@@ -69,12 +69,25 @@ FileSystem: Blob 내용 (압축 저장)
 
 ## 6. API 엔드포인트
 
+### 인증 (Phase 8)
+JWT(HS256, `JWT_SECRET`) 기반. CLI 는 `cts login` 으로 토큰을 받아 전역
+(`~/.config/cts/credentials.json`)에 서버 URL별 저장하고, 쓰기 요청에
+`Authorization: Bearer <jwt>` 를 보낸다.
+```
+POST   /api/auth/register             # 회원가입 → 토큰
+POST   /api/auth/login                # 로그인 → 토큰
+GET    /api/users/me                  # 내 정보 (인증 필요)
+```
+**인가**: 공개읽기 + 소유자쓰기.
+- 쓰기(생성/삭제/push/빌드 트리거): 인증 + 저장소 소유자만(아니면 403)
+- 읽기(조회/pull/브라우징/빌드 조회): 공개는 누구나, 비공개는 소유자만(아니면 404 은닉)
+
 ### 저장소 CRUD (Phase 2)
 ```
-POST   /api/repositories              # 저장소 생성
-GET    /api/repositories              # 저장소 목록
-GET    /api/repositories/:id          # 저장소 조회
-DELETE /api/repositories/:id          # 저장소 삭제
+POST   /api/repositories              # 저장소 생성 (인증)
+GET    /api/repositories              # 저장소 목록 (공개 + 본인 비공개)
+GET    /api/repositories/:id          # 저장소 조회 (공개읽기)
+DELETE /api/repositories/:id          # 저장소 삭제 (소유자)
 GET    /health                        # 헬스체크
 ```
 
