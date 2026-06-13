@@ -13,6 +13,7 @@
 
 use std::sync::Arc;
 
+use crate::build::domain::ports::{BuildRepository, BuildRunner};
 use crate::repository::domain::ports::{BlobStorage, ObjectRepository, RepositoryRepository};
 
 /// 핸들러에 주입되는 공유 상태
@@ -24,6 +25,10 @@ pub struct AppState {
     pub objects: Arc<dyn ObjectRepository>,
     /// Blob 내용 저장소 포트
     pub blobs: Arc<dyn BlobStorage>,
+    /// 빌드 기록 영속화 포트
+    pub builds: Arc<dyn BuildRepository>,
+    /// 빌드 실행기 포트
+    pub build_runner: Arc<dyn BuildRunner>,
 }
 
 impl AppState {
@@ -31,11 +36,15 @@ impl AppState {
         repositories: Arc<dyn RepositoryRepository>,
         objects: Arc<dyn ObjectRepository>,
         blobs: Arc<dyn BlobStorage>,
+        builds: Arc<dyn BuildRepository>,
+        build_runner: Arc<dyn BuildRunner>,
     ) -> Self {
         Self {
             repositories,
             objects,
             blobs,
+            builds,
+            build_runner,
         }
     }
 }

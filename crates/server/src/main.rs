@@ -20,6 +20,9 @@ use anyhow::Context;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::EnvFilter;
 
+use server::build::domain::ports::{BuildRepository, BuildRunner};
+use server::build::infrastructure::adapters::{PgBuildRepository, ShellBuildRunner};
+use server::repository::domain::ports::{BlobStorage, ObjectRepository, RepositoryRepository};
 use server::repository::infrastructure::adapters::{
     FileBlobStorage, PgObjectRepository, PgRepositoryRepository,
 };
@@ -49,10 +52,21 @@ async fn main() -> anyhow::Result<()> {
     // 4. 어댑터 → AppState
     let storage_path =
         std::env::var("STORAGE_PATH").unwrap_or_else(|_| "./storage".to_string());
-    let repositories = Arc::new(PgRepositoryRepository::new(pool.clone()));
-    let objects = Arc::new(PgObjectRepository::new(pool));
-    let blobs = Arc::new(FileBlobStorage::new(storage_path));
-    let state = AppState::new(repositories, objects, blobs);
+    let storage_base = std::path::PathBuf::from(&storage_path);
+
+    let repositories: Arc<dyn RepositoryRepository> =
+        Arc::new(PgRepositoryRepository::new(pool.clone()));
+    let objects: Arc<dyn ObjectRepository> = Arc::new(PgObjectRepository::new(pool.clone()));
+    let blobs: Arc<dyn BlobStorage> = Arc::new(FileBlobStorage::new(storage_path.clone()));
+    let builds: Arc<dyn BuildRepository> = Arc::new(PgBuildRepository::new(pool));
+    let build_runner: Arc<dyn BuildRunner> = Arc::new(ShellBuildRunner::new(
+        objects.clone(),
+        blobs.clone(),
+        storage_base.join("builds").join("logs"),
+        storage_base.join("builds").join("work"),
+    ));
+
+    let state = AppState::new(repositories, objects, blobs, builds, build_runner);
 
     // 5. 라우터 빌드 + 서버 실행
     let app = server::app(state);

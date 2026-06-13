@@ -31,9 +31,10 @@ use crate::state::AppState;
 /// - `GET /health`            : 헬스체크
 /// - `/api/...`               : 도메인별 REST API
 pub fn app(state: AppState) -> Router {
+    let api = repository::api::routes::routes().merge(build::api::routes::routes());
     Router::new()
         .route("/health", get(health))
-        .nest("/api", repository::api::routes::routes())
+        .nest("/api", api)
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
