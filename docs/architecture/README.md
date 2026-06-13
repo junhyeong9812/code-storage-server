@@ -76,8 +76,11 @@ JWT(HS256, `JWT_SECRET`) 기반. CLI 는 `cts login` 으로 토큰을 받아 전
 ```
 POST   /api/auth/register             # 회원가입 → 토큰
 POST   /api/auth/login                # 로그인 → 토큰
+POST   /api/auth/logout               # 로그아웃(토큰 철회, 인증 필요)
 GET    /api/users/me                  # 내 정보 (인증 필요)
 ```
+**토큰 철회(Phase 10)**: JWT 에 `jti` 를 넣고, 로그아웃 시 `revoked_tokens` 에
+기록. 검증 시 서명·만료 확인 + jti 철회 여부 확인. (access/refresh 회전은 없음)
 **인가**: 공개읽기 + 역할 기반(Phase 9). AccessLevel = None<Read<Write<Admin<Owner.
 - 읽기(조회/pull/브라우징/빌드 조회): 공개는 누구나, 비공개는 소유자/협업자(아니면 404 은닉)
 - 쓰기(push/빌드 트리거): 소유자 또는 write·admin 협업자(아니면 403)

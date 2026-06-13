@@ -27,6 +27,7 @@ cts log                        # 커밋 히스토리
 cts status                     # 현재 상태
 cts register <url> <user> <email>  # 회원가입 (서버)
 cts login <url> <user>             # 로그인 (토큰 저장)
+cts logout <url>                   # 로그아웃 (토큰 철회 + 자격증명 제거)
 cts remote <url> <name>        # 원격 설정 (서버에 저장소 생성)
 cts push                       # 서버에 푸시 (쓰기 권한)
 cts pull                       # 서버에서 풀
@@ -145,6 +146,7 @@ curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
 - [x] Phase 7: Web UI
 - [x] Phase 8: 인증/인가 (User) — JWT 로그인, 공개읽기 + 소유자쓰기
 - [x] Phase 9: 협업 권한 (Collaborators) — read/write/admin 역할
+- [x] Phase 10: 토큰 철회/로그아웃 — JWT jti 블랙리스트
 
 ## 라이선스
 
