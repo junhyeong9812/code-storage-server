@@ -17,6 +17,7 @@ mod config;
 mod commands;
 mod index;
 mod objects;
+mod refs;
 mod repo;
 
 use anyhow::Result;
@@ -69,10 +70,7 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Init { path } => commands::init::run(path)?,
         Commands::Add { files } => commands::add::run(files)?,
-        Commands::Commit { message } => {
-            let _ = message;
-            todo_phase("commit", 3);
-        }
+        Commands::Commit { message } => commands::commit::run(message)?,
         Commands::Status => todo_phase("status", 3),
         Commands::Log => todo_phase("log", 3),
         Commands::Push => todo_phase("push", 4),

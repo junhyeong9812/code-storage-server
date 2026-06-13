@@ -18,7 +18,7 @@
 // =============================================================================
 
 use anyhow::{bail, Context, Result};
-use cts_core::{compress, decompress, Blob};
+use cts_core::{compress, decompress, Blob, Commit, Tree};
 
 use crate::repo::Repo;
 
@@ -74,5 +74,23 @@ pub fn write_blob(repo: &Repo, content: &[u8]) -> Result<String> {
     let mut blob = Blob::new(content.to_vec());
     let hash = blob.hash().to_string();
     write_object(repo, "blob", &hash, content)?;
+    Ok(hash)
+}
+
+/// Tree 객체를 저장하고 해시를 반환한다.
+///
+/// 객체 id 는 core 의 Tree::hash 규칙을, 저장 body 는 엔트리 JSON 을 사용한다.
+pub fn write_tree(repo: &Repo, tree: &mut Tree) -> Result<String> {
+    let hash = tree.hash().to_string();
+    let body = serde_json::to_vec(tree.entries()).context("tree 직렬화 실패")?;
+    write_object(repo, "tree", &hash, &body)?;
+    Ok(hash)
+}
+
+/// Commit 객체를 저장하고 해시를 반환한다.
+pub fn write_commit(repo: &Repo, commit: &mut Commit) -> Result<String> {
+    let hash = commit.hash().to_string();
+    let body = serde_json::to_vec(commit).context("commit 직렬화 실패")?;
+    write_object(repo, "commit", &hash, &body)?;
     Ok(hash)
 }
