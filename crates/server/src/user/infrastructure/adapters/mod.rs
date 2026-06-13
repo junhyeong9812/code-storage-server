@@ -1,6 +1,11 @@
 // =============================================================================
-// User 어댑터
+// User 어댑터 (adapters/mod.rs)
 // =============================================================================
 
-// TODO: 구현 예정
-// - PostgresUserAdapter
+pub mod bcrypt_password_hasher;
+pub mod jwt_token_service;
+pub mod postgres_user_repository;
+
+pub use bcrypt_password_hasher::BcryptPasswordHasher;
+pub use jwt_token_service::JwtTokenService;
+pub use postgres_user_repository::PgUserRepository;
