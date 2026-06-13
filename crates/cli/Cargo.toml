@@ -86,3 +86,6 @@ anyhow.workspace = true
 # ureq: 동기(blocking) HTTP 클라이언트. CLI 는 동기 흐름이라 가볍게 사용.
 # - json feature: serde 기반 .send_json / .into_json
 ureq = { version = "2", features = ["json"] }
+
+# rpassword: 비밀번호 숨김 입력 (Phase 8)
+rpassword.workspace = true

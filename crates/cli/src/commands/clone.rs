@@ -16,13 +16,15 @@ use anyhow::{anyhow, bail, Result};
 use crate::bundle;
 use crate::checkout;
 use crate::config::{Config, Remote};
+use crate::credentials;
 use crate::refs;
 use crate::remote as net;
 use crate::repo::Repo;
 
 pub fn run(url: String) -> Result<()> {
     let (server, repo_id) = parse_url(&url)?;
-    let info = net::get_repo(&server, &repo_id)?;
+    let token = credentials::token_for(&server)?;
+    let info = net::get_repo(&server, &repo_id, token.as_deref())?;
 
     let dir = PathBuf::from(&info.name);
     if dir.exists() {
@@ -46,7 +48,7 @@ pub fn run(url: String) -> Result<()> {
     }
 
     // pull
-    let resp = net::pull(&server, &repo_id, &branch)?;
+    let resp = net::pull(&server, &repo_id, &branch, token.as_deref())?;
     match resp.commit_hash {
         Some(head) => {
             bundle::apply_bundle(&repo, &resp.objects)?;

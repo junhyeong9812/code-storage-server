@@ -12,6 +12,7 @@ use shared::protocol::PushRequest;
 
 use crate::bundle;
 use crate::config::Config;
+use crate::credentials;
 use crate::refs;
 use crate::remote as net;
 use crate::repo::Repo;
@@ -27,6 +28,9 @@ pub fn run() -> Result<()> {
     let head = refs::read_branch(&repo, &branch)?
         .ok_or_else(|| anyhow!("커밋이 없습니다. 'cts commit' 을 먼저 실행하세요."))?;
 
+    let token = credentials::token_for(&remote.url)?
+        .ok_or_else(|| anyhow!("먼저 'cts login {} <username>' 로 로그인하세요.", remote.url))?;
+
     let objects = bundle::collect_for_push(&repo, &head)?;
     let request = PushRequest {
         branch: branch.clone(),
@@ -34,7 +38,7 @@ pub fn run() -> Result<()> {
         objects,
     };
 
-    let resp = net::push(&remote, &request)?;
+    let resp = net::push(&remote, &request, &token)?;
     println!("푸시 완료 → {} ({branch})", remote.url);
     println!(
         "  신규: blob {}, tree {}, commit {}",

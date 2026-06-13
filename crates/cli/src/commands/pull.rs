@@ -12,6 +12,7 @@ use anyhow::{anyhow, Result};
 use crate::bundle;
 use crate::checkout;
 use crate::config::Config;
+use crate::credentials;
 use crate::refs;
 use crate::remote as net;
 use crate::repo::Repo;
@@ -24,7 +25,8 @@ pub fn run() -> Result<()> {
         .ok_or_else(|| anyhow!("원격이 없습니다. 'cts remote <url> <name>' 을 먼저 실행하세요."))?;
 
     let branch = refs::current_branch(&repo)?;
-    let resp = net::pull(&remote.url, &remote.repo_id, &branch)?;
+    let token = credentials::token_for(&remote.url)?;
+    let resp = net::pull(&remote.url, &remote.repo_id, &branch, token.as_deref())?;
 
     match resp.commit_hash {
         None => {

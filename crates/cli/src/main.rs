@@ -17,6 +17,7 @@ mod bundle;
 mod checkout;
 mod config;
 mod commands;
+mod credentials;
 mod index;
 mod objects;
 mod refs;
@@ -66,6 +67,19 @@ enum Commands {
         /// Branch name
         branch: String,
     },
+    /// Register a new account on a server
+    Register {
+        /// Server base URL (e.g. http://127.0.0.1:8080)
+        server: String,
+        username: String,
+        email: String,
+    },
+    /// Log in to a server (stores token)
+    Login {
+        /// Server base URL
+        server: String,
+        username: String,
+    },
     /// Configure or show the remote server
     Remote {
         /// Server base URL (e.g. http://127.0.0.1:8080)
@@ -99,6 +113,12 @@ fn main() -> Result<()> {
         Commands::Checkout { create, branch } => commands::checkout::run(branch, create)?,
         Commands::Status => commands::status::run()?,
         Commands::Log => commands::log::run()?,
+        Commands::Register {
+            server,
+            username,
+            email,
+        } => commands::login::register(server, username, email)?,
+        Commands::Login { server, username } => commands::login::login(server, username)?,
         Commands::Remote { url, name } => commands::remote::run(url, name)?,
         Commands::Push => commands::push::run()?,
         Commands::Pull => commands::pull::run()?,

@@ -8,9 +8,10 @@
 // 파일 위치: crates/cli/src/commands/remote.rs
 // =============================================================================
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 
 use crate::config::{Config, Remote};
+use crate::credentials;
 use crate::remote as net;
 use crate::repo::Repo;
 
@@ -24,7 +25,9 @@ pub fn run(url: Option<String>, name: Option<String>) -> Result<()> {
 }
 
 fn set(repo: &Repo, url: String, name: String) -> Result<()> {
-    let info = net::create_or_get_repo(&url, &name)?;
+    let token = credentials::token_for(&url)?
+        .ok_or_else(|| anyhow!("먼저 'cts login {url} <username>' 로 로그인하세요."))?;
+    let info = net::create_or_get_repo(&url, &name, &token)?;
     let mut config = Config::load(repo)?;
     config.remote = Some(Remote {
         url: url.clone(),
