@@ -90,6 +90,20 @@ GET    /api/repositories/:id/pull?branch=... # 객체 번들 다운로드
   - `tree_entries.mode` = git 모드("100644" 등), `target_type` = "blob"|"tree"
   - 자식 해시 → 내부 UUID 해석은 어댑터에서 수행
 
+### Build / CI-CD (Phase 6)
+서버 사이드 빌드. 푸시된 커밋의 트리를 임시 디렉토리에 복원해 빌드 명령을
+실행하고(로컬 셸 러너) 상태/로그를 기록한다.
+```
+POST   /api/repositories/:id/builds            # 빌드 트리거(+실행)
+GET    /api/repositories/:id/builds            # 빌드 목록
+GET    /api/repositories/:id/builds/:bid       # 빌드 상태
+GET    /api/repositories/:id/builds/:bid/log   # 빌드 로그(텍스트)
+```
+- 요청 body: `{ "commit_hash": "...", "command": "선택" }`
+  (command 생략 시 저장소 루트의 `cts.build.sh` 실행)
+- 상태: pending → running → success/failed
+- BuildRunner 는 포트 — 추후 DockerBuildRunner 로 교체 가능
+
 ### 초기 설계(미구현, 참고용)
 ```
 POST   /api/repositories/:id/commits      # 커밋 생성

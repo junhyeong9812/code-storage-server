@@ -114,7 +114,7 @@ cts push
 - [x] Phase 3: CLI (init, add, commit)
 - [x] Phase 4: Push/Pull (서버 연동)
 - [x] Phase 5: Branch (브랜치 관리)
-- [ ] Phase 6: Build (CI/CD)
+- [x] Phase 6: Build (CI/CD)
 - [ ] Phase 7: Web UI
 
 ## 라이선스
