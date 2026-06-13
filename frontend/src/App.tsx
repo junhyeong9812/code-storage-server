@@ -1,34 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// =============================================================================
+// CTS Web UI 라우터 (App.tsx)
+// =============================================================================
+
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { GitBranch } from 'lucide-react'
+import RepoList from './pages/RepoList'
+import RepoView from './pages/RepoView'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <BrowserRouter>
+      <div className="app">
+        <div className="topbar">
+          <GitBranch size={20} color="#58a6ff" />
+          <Link to="/" className="brand">
+            Code<span>Storage</span>
+          </Link>
+          <span className="muted small">— 독립 버전 관리 시스템</span>
+        </div>
+        <Routes>
+          <Route path="/" element={<RepoList />} />
+          <Route path="/repos/:id" element={<RepoView />} />
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </BrowserRouter>
   )
 }
 
