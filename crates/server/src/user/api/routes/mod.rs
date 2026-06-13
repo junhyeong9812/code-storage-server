@@ -21,5 +21,6 @@ pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/auth/register", post(handlers::register_handler))
         .route("/auth/login", post(handlers::login_handler))
+        .route("/auth/logout", post(handlers::logout_handler))
         .route("/users/me", get(handlers::me_handler))
 }

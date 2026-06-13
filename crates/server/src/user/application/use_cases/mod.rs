@@ -8,10 +8,11 @@
 // =============================================================================
 
 use shared::error::AppError;
+use shared::types::now;
 
 use crate::user::application::dto::{AuthResponse, LoginRequest, RegisterRequest};
 use crate::user::domain::entities::User;
-use crate::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
+use crate::user::domain::ports::{PasswordHasher, TokenRevocation, TokenService, UserRepository};
 use crate::user::domain::value_objects::{Email, Username};
 
 /// 회원가입
@@ -43,6 +44,16 @@ pub async fn register(
         token,
         user: user.into(),
     })
+}
+
+/// 로그아웃 — 현재 토큰의 jti 를 철회한다.
+pub async fn logout(
+    revocation: &dyn TokenRevocation,
+    jti: &str,
+    exp: i64,
+) -> Result<(), AppError> {
+    let expires_at = chrono::DateTime::from_timestamp(exp, 0).unwrap_or_else(now);
+    revocation.revoke(jti, expires_at).await
 }
 
 /// 로그인

@@ -9,7 +9,7 @@ use crate::auth::AuthUser;
 use crate::error::ApiError;
 use crate::state::AppState;
 use crate::user::application::dto::{AuthResponse, LoginRequest, RegisterRequest, UserDto};
-use crate::user::application::use_cases::{login, register};
+use crate::user::application::use_cases::{login, logout, register};
 use crate::user::domain::value_objects::UserId;
 
 /// POST /api/auth/register
@@ -40,6 +40,15 @@ pub async fn login_handler(
     )
     .await?;
     Ok(Json(resp))
+}
+
+/// POST /api/auth/logout — 현재 토큰 철회 (인증 필요)
+pub async fn logout_handler(
+    State(state): State<AppState>,
+    auth: AuthUser,
+) -> Result<StatusCode, ApiError> {
+    logout(state.token_revocation.as_ref(), &auth.jti, auth.exp).await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// GET /api/users/me (인증 필요)
