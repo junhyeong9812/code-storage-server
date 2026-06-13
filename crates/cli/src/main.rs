@@ -22,6 +22,7 @@ mod objects;
 mod refs;
 mod remote;
 mod repo;
+mod worktree;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -52,6 +53,19 @@ enum Commands {
         #[arg(short, long)]
         message: String,
     },
+    /// List branches, or create one with a name
+    Branch {
+        /// New branch name (omit to list)
+        name: Option<String>,
+    },
+    /// Switch to a branch
+    Checkout {
+        /// Create the branch before switching
+        #[arg(short = 'b')]
+        create: bool,
+        /// Branch name
+        branch: String,
+    },
     /// Configure or show the remote server
     Remote {
         /// Server base URL (e.g. http://127.0.0.1:8080)
@@ -81,6 +95,8 @@ fn main() -> Result<()> {
         Commands::Init { path } => commands::init::run(path)?,
         Commands::Add { files } => commands::add::run(files)?,
         Commands::Commit { message } => commands::commit::run(message)?,
+        Commands::Branch { name } => commands::branch::run(name)?,
+        Commands::Checkout { create, branch } => commands::checkout::run(branch, create)?,
         Commands::Status => commands::status::run()?,
         Commands::Log => commands::log::run()?,
         Commands::Remote { url, name } => commands::remote::run(url, name)?,

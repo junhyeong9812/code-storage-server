@@ -46,3 +46,48 @@ pub fn update_branch(repo: &Repo, branch: &str, commit_hash: &str) -> Result<()>
         .with_context(|| format!("브랜치 갱신 실패: {branch}"))?;
     Ok(())
 }
+
+/// HEAD 를 지정한 브랜치를 가리키도록 변경
+pub fn set_head(repo: &Repo, branch: &str) -> Result<()> {
+    std::fs::write(repo.head_path(), format!("{HEAD_PREFIX}{branch}\n"))
+        .context("HEAD 갱신 실패")?;
+    Ok(())
+}
+
+/// 브랜치 존재 여부
+pub fn branch_exists(repo: &Repo, branch: &str) -> bool {
+    repo.refs_heads_dir().join(branch).is_file()
+}
+
+/// 모든 브랜치 이름 (refs/heads 하위, 중첩 포함)
+pub fn list_branches(repo: &Repo) -> Result<Vec<String>> {
+    let base = repo.refs_heads_dir();
+    let mut names = Vec::new();
+    if base.is_dir() {
+        collect_branches(&base, &base, &mut names)?;
+    }
+    names.sort();
+    Ok(names)
+}
+
+fn collect_branches(
+    base: &std::path::Path,
+    dir: &std::path::Path,
+    out: &mut Vec<String>,
+) -> Result<()> {
+    for entry in std::fs::read_dir(dir).context("refs/heads 읽기 실패")? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_branches(base, &path, out)?;
+        } else if let Ok(rel) = path.strip_prefix(base) {
+            let name = rel
+                .components()
+                .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                .collect::<Vec<_>>()
+                .join("/");
+            out.push(name);
+        }
+    }
+    Ok(())
+}
