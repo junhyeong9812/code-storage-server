@@ -18,6 +18,33 @@ const API_BASE: string =
 
 const api = axios.create({ baseURL: `${API_BASE}/api` })
 
+// 저장된 토큰을 모든 요청에 Bearer 로 첨부
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('cts_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// -----------------------------------------------------------------------------
+// 인증
+// -----------------------------------------------------------------------------
+export interface AuthResult {
+  token: string
+  user: { id: string; username: string; email: string }
+}
+
+export const register = (username: string, email: string, password: string) =>
+  api
+    .post<AuthResult>('/auth/register', { username, email, password })
+    .then((r) => r.data)
+
+export const login = (username: string, password: string) =>
+  api.post<AuthResult>('/auth/login', { username, password }).then((r) => r.data)
+
+export const logout = () => api.post('/auth/logout').then((r) => r.data)
+
 export const getRepositories = () =>
   api.get<Repository[]>('/repositories').then((r) => r.data)
 

@@ -147,6 +147,7 @@ curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
 - [x] Phase 8: 인증/인가 (User) — JWT 로그인, 공개읽기 + 소유자쓰기
 - [x] Phase 9: 협업 권한 (Collaborators) — read/write/admin 역할
 - [x] Phase 10: 토큰 철회/로그아웃 — JWT jti 블랙리스트
+- [x] Phase 11: Web UI 로그인 — zustand + localStorage, 비공개 저장소 표시
 
 ## 라이선스
 
