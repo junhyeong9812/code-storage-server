@@ -69,16 +69,32 @@ FileSystem: Blob 내용 (압축 저장)
 
 ## 6. API 엔드포인트
 
+### 저장소 CRUD (Phase 2)
 ```
 POST   /api/repositories              # 저장소 생성
+GET    /api/repositories              # 저장소 목록
 GET    /api/repositories/:id          # 저장소 조회
 DELETE /api/repositories/:id          # 저장소 삭제
+GET    /health                        # 헬스체크
+```
 
-POST   /api/repositories/:id/commits  # 커밋 생성
-GET    /api/repositories/:id/commits  # 커밋 목록
+### Push/Pull (Phase 4)
+개별 객체 엔드포인트(아래 "초기 설계") 대신, 커밋에서 도달 가능한 객체
+묶음(closure)을 한 번에 주고받는 **bulk 프로토콜**을 사용한다. (구현 단순화)
+```
+POST   /api/repositories/:id/push            # 객체 번들 업로드 + 브랜치 갱신
+GET    /api/repositories/:id/pull?branch=... # 객체 번들 다운로드
+```
+- 요청/응답 타입: `shared::protocol` (Wire{Blob,Tree,Commit}, ObjectBundle 등)
+- 서버 저장: blobs(내용=파일시스템, 메타=DB) / trees·tree_entries / commits / branches
+  - `tree_entries.mode` = git 모드("100644" 등), `target_type` = "blob"|"tree"
+  - 자식 해시 → 내부 UUID 해석은 어댑터에서 수행
 
-POST   /api/repositories/:id/blobs    # Blob 업로드
+### 초기 설계(미구현, 참고용)
+```
+POST   /api/repositories/:id/commits      # 커밋 생성
+GET    /api/repositories/:id/commits      # 커밋 목록
+POST   /api/repositories/:id/blobs        # Blob 업로드
 GET    /api/repositories/:id/blobs/:hash  # Blob 다운로드
-
 GET    /api/repositories/:id/tree/:hash   # Tree 조회
 ```

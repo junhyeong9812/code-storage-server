@@ -111,7 +111,7 @@ cts push
 - [x] Phase 1: Core (객체 모델, 해싱)
 - [x] Phase 2: Server (저장소 CRUD)
 - [x] Phase 3: CLI (init, add, commit)
-- [ ] Phase 4: Push/Pull (서버 연동)
+- [x] Phase 4: Push/Pull (서버 연동)
 - [ ] Phase 5: Branch (브랜치 관리)
 - [ ] Phase 6: Build (CI/CD)
 - [ ] Phase 7: Web UI
