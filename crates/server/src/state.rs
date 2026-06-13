@@ -13,7 +13,7 @@ use crate::build::domain::ports::{BuildRepository, BuildRunner};
 use crate::repository::domain::ports::{
     BlobStorage, CollaboratorRepository, ObjectRepository, RepositoryRepository,
 };
-use crate::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
+use crate::user::domain::ports::{PasswordHasher, TokenRevocation, TokenService, UserRepository};
 
 /// 핸들러에 주입되는 공유 상태
 #[derive(Clone)]
@@ -36,4 +36,6 @@ pub struct AppState {
     pub password_hasher: Arc<dyn PasswordHasher>,
     /// 토큰 발급/검증 포트
     pub tokens: Arc<dyn TokenService>,
+    /// 토큰 철회(로그아웃) 포트
+    pub token_revocation: Arc<dyn TokenRevocation>,
 }

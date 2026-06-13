@@ -29,9 +29,11 @@ use server::repository::infrastructure::adapters::{
     FileBlobStorage, PgCollaboratorRepository, PgObjectRepository, PgRepositoryRepository,
 };
 use server::state::AppState;
-use server::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
+use server::user::domain::ports::{
+    PasswordHasher, TokenRevocation, TokenService, UserRepository,
+};
 use server::user::infrastructure::adapters::{
-    BcryptPasswordHasher, JwtTokenService, PgUserRepository,
+    BcryptPasswordHasher, JwtTokenService, PgTokenRevocation, PgUserRepository,
 };
 
 #[tokio::main]
@@ -79,9 +81,10 @@ async fn main() -> anyhow::Result<()> {
         tracing::warn!("JWT_SECRET 미설정 — 개발용 기본 키 사용(운영에서는 반드시 설정)");
         "cts-dev-insecure-secret-change-me".to_string()
     });
-    let users: Arc<dyn UserRepository> = Arc::new(PgUserRepository::new(pool));
+    let users: Arc<dyn UserRepository> = Arc::new(PgUserRepository::new(pool.clone()));
     let password_hasher: Arc<dyn PasswordHasher> = Arc::new(BcryptPasswordHasher);
     let tokens: Arc<dyn TokenService> = Arc::new(JwtTokenService::new(jwt_secret.into_bytes()));
+    let token_revocation: Arc<dyn TokenRevocation> = Arc::new(PgTokenRevocation::new(pool));
 
     let state = AppState {
         repositories,
@@ -93,6 +96,7 @@ async fn main() -> anyhow::Result<()> {
         users,
         password_hasher,
         tokens,
+        token_revocation,
     };
 
     // 5. 라우터 빌드 + 서버 실행

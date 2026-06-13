@@ -15,6 +15,10 @@ use shared::types::Id;
 pub struct AuthClaims {
     pub user_id: Id,
     pub username: String,
+    /// 토큰 고유 id (철회 식별용)
+    pub jti: String,
+    /// 만료 (unix epoch seconds)
+    pub exp: i64,
 }
 
 pub trait TokenService: Send + Sync {

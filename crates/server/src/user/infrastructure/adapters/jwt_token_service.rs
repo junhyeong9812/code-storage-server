@@ -23,6 +23,8 @@ struct Claims {
     /// subject = user_id (UUID 문자열)
     sub: String,
     username: String,
+    /// 토큰 고유 id (철회 식별용)
+    jti: String,
     /// 만료 (unix epoch seconds)
     exp: usize,
 }
@@ -47,6 +49,7 @@ impl TokenService for JwtTokenService {
         let claims = Claims {
             sub: user_id.to_string(),
             username: username.to_string(),
+            jti: Uuid::new_v4().to_string(),
             exp,
         };
         encode(
@@ -69,6 +72,8 @@ impl TokenService for JwtTokenService {
         Ok(AuthClaims {
             user_id,
             username: data.claims.username,
+            jti: data.claims.jti,
+            exp: data.claims.exp as i64,
         })
     }
 }

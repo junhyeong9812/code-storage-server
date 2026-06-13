@@ -27,6 +27,10 @@ use crate::state::AppState;
 pub struct AuthUser {
     pub user_id: Id,
     pub username: String,
+    /// 토큰 고유 id (로그아웃/철회용)
+    pub jti: String,
+    /// 토큰 만료 (unix epoch seconds)
+    pub exp: i64,
 }
 
 #[axum::async_trait]
@@ -39,9 +43,15 @@ impl FromRequestParts<AppState> for AuthUser {
     ) -> Result<Self, Self::Rejection> {
         let token = bearer(parts).ok_or(AppError::Unauthorized)?;
         let claims = state.tokens.verify(&token)?;
+        // 철회(로그아웃)된 토큰 거부
+        if state.token_revocation.is_revoked(&claims.jti).await? {
+            return Err(AppError::Unauthorized.into());
+        }
         Ok(AuthUser {
             user_id: claims.user_id,
             username: claims.username,
+            jti: claims.jti,
+            exp: claims.exp,
         })
     }
 }

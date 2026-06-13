@@ -17,6 +17,15 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ---------------------------------------------------------------------------
+-- revoked_tokens (로그아웃된 JWT — Phase 10)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+    jti VARCHAR(64) PRIMARY KEY,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ---------------------------------------------------------------------------
 -- repositories (저장소)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS repositories (
