@@ -28,6 +28,8 @@ mod worktree;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+use commands::collab::Action as CollabAction;
+
 #[derive(Parser)]
 #[command(name = "cts")]
 #[command(about = "Code Storage - A version control system", long_about = None)]
@@ -87,6 +89,11 @@ enum Commands {
         /// Repository name on the server
         name: Option<String>,
     },
+    /// Manage repository collaborators
+    Collab {
+        #[command(subcommand)]
+        action: CollabCmd,
+    },
     /// Push to remote server
     Push,
     /// Pull from remote server
@@ -100,6 +107,20 @@ enum Commands {
     Log,
     /// Show current status
     Status,
+}
+
+#[derive(Subcommand)]
+enum CollabCmd {
+    /// Add a collaborator (role: read|write|admin, default write)
+    Add {
+        username: String,
+        #[arg(default_value = "write")]
+        role: String,
+    },
+    /// Remove a collaborator
+    Rm { username: String },
+    /// List collaborators
+    Ls,
 }
 
 fn main() -> Result<()> {
@@ -120,6 +141,14 @@ fn main() -> Result<()> {
         } => commands::login::register(server, username, email)?,
         Commands::Login { server, username } => commands::login::login(server, username)?,
         Commands::Remote { url, name } => commands::remote::run(url, name)?,
+        Commands::Collab { action } => {
+            let action = match action {
+                CollabCmd::Add { username, role } => CollabAction::Add { username, role },
+                CollabCmd::Rm { username } => CollabAction::Rm { username },
+                CollabCmd::Ls => CollabAction::Ls,
+            };
+            commands::collab::run(action)?
+        }
         Commands::Push => commands::push::run()?,
         Commands::Pull => commands::pull::run()?,
         Commands::Clone { url } => commands::clone::run(url)?,

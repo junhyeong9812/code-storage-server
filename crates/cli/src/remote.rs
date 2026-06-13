@@ -152,3 +152,51 @@ pub fn pull(
         .into_json()
         .context("pull 응답 파싱 실패")
 }
+
+// -----------------------------------------------------------------------------
+// 협업자
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Deserialize)]
+pub struct CollaboratorInfo {
+    pub username: String,
+    pub role: String,
+}
+
+pub fn add_collaborator(remote: &Remote, username: &str, role: &str, token: &str) -> Result<()> {
+    let url = format!(
+        "{}/api/repositories/{}/collaborators",
+        base(&remote.url),
+        remote.repo_id
+    );
+    auth(ureq::post(&url), Some(token))
+        .send_json(serde_json::json!({ "username": username, "role": role }))
+        .map_err(map_err)?;
+    Ok(())
+}
+
+pub fn remove_collaborator(remote: &Remote, username: &str, token: &str) -> Result<()> {
+    let url = format!(
+        "{}/api/repositories/{}/collaborators/{}",
+        base(&remote.url),
+        remote.repo_id,
+        username
+    );
+    auth(ureq::delete(&url), Some(token))
+        .call()
+        .map_err(map_err)?;
+    Ok(())
+}
+
+pub fn list_collaborators(remote: &Remote, token: Option<&str>) -> Result<Vec<CollaboratorInfo>> {
+    let url = format!(
+        "{}/api/repositories/{}/collaborators",
+        base(&remote.url),
+        remote.repo_id
+    );
+    auth(ureq::get(&url), token)
+        .call()
+        .map_err(map_err)?
+        .into_json()
+        .context("협업자 목록 파싱 실패")
+}
