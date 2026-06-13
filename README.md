@@ -28,9 +28,12 @@ cts status                     # 현재 상태
 cts register <url> <user> <email>  # 회원가입 (서버)
 cts login <url> <user>             # 로그인 (토큰 저장)
 cts remote <url> <name>        # 원격 설정 (서버에 저장소 생성)
-cts push                       # 서버에 푸시 (소유자만)
+cts push                       # 서버에 푸시 (쓰기 권한)
 cts pull                       # 서버에서 풀
 cts clone <url>                # 저장소 복제
+cts collab add <user> [role]   # 협업자 추가 (read|write|admin, 기본 write)
+cts collab rm <user>           # 협업자 제거
+cts collab ls                  # 협업자 목록
 ```
 
 ### Server
@@ -141,6 +144,7 @@ curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
 - [x] Phase 6: Build (CI/CD)
 - [x] Phase 7: Web UI
 - [x] Phase 8: 인증/인가 (User) — JWT 로그인, 공개읽기 + 소유자쓰기
+- [x] Phase 9: 협업 권한 (Collaborators) — read/write/admin 역할
 
 ## 라이선스
 

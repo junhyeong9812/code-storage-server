@@ -78,9 +78,18 @@ POST   /api/auth/register             # 회원가입 → 토큰
 POST   /api/auth/login                # 로그인 → 토큰
 GET    /api/users/me                  # 내 정보 (인증 필요)
 ```
-**인가**: 공개읽기 + 소유자쓰기.
-- 쓰기(생성/삭제/push/빌드 트리거): 인증 + 저장소 소유자만(아니면 403)
-- 읽기(조회/pull/브라우징/빌드 조회): 공개는 누구나, 비공개는 소유자만(아니면 404 은닉)
+**인가**: 공개읽기 + 역할 기반(Phase 9). AccessLevel = None<Read<Write<Admin<Owner.
+- 읽기(조회/pull/브라우징/빌드 조회): 공개는 누구나, 비공개는 소유자/협업자(아니면 404 은닉)
+- 쓰기(push/빌드 트리거): 소유자 또는 write·admin 협업자(아니면 403)
+- 관리(협업자 추가/삭제): 소유자 또는 admin 협업자
+- 삭제(저장소): 소유자 단독
+
+**협업자 (Phase 9)** — `repository_collaborators(repo, user, role)`:
+```
+POST   /api/repositories/:id/collaborators            # 추가/역할변경 (admin)
+DELETE /api/repositories/:id/collaborators/:username  # 제거 (admin)
+GET    /api/repositories/:id/collaborators            # 목록 (읽기)
+```
 
 ### 저장소 CRUD (Phase 2)
 ```
