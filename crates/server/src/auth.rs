@@ -14,8 +14,12 @@ use axum::http::header::AUTHORIZATION;
 use axum::http::request::Parts;
 use shared::error::AppError;
 use shared::types::Id;
+use uuid::Uuid;
 
 use crate::error::ApiError;
+use crate::repository::application::use_cases::get_repository;
+use crate::repository::domain::entities::Repository;
+use crate::repository::domain::value_objects::RepositoryId;
 use crate::state::AppState;
 
 /// 인증된 사용자 (Bearer 토큰 필수)
@@ -68,4 +72,42 @@ fn bearer(parts: &Parts) -> Option<String> {
         .ok()?
         .strip_prefix("Bearer ")
         .map(|s| s.to_string())
+}
+
+// -----------------------------------------------------------------------------
+// 인가 헬퍼 (repository / build 핸들러 공용)
+// -----------------------------------------------------------------------------
+
+/// 저장소 로드 (없으면 404)
+pub async fn load_repository(state: &AppState, id: Uuid) -> Result<Repository, ApiError> {
+    Ok(get_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?)
+}
+
+/// 쓰기 권한 검사: 인증된 사용자가 소유자여야 한다.
+pub async fn require_owner(
+    state: &AppState,
+    id: Uuid,
+    auth: &AuthUser,
+) -> Result<Repository, ApiError> {
+    let repo = load_repository(state, id).await?;
+    if repo.owner_id().as_uuid() != auth.user_id {
+        return Err(AppError::Forbidden("저장소 소유자가 아닙니다".into()).into());
+    }
+    Ok(repo)
+}
+
+/// 읽기 권한 검사: 공개 저장소는 누구나, 비공개는 소유자만(없으면 404로 은닉).
+pub async fn require_read(
+    state: &AppState,
+    id: Uuid,
+    auth: &MaybeAuthUser,
+) -> Result<Repository, ApiError> {
+    let repo = load_repository(state, id).await?;
+    if repo.is_private() {
+        let is_owner = auth.0.as_ref().map(|a| a.user_id) == Some(repo.owner_id().as_uuid());
+        if !is_owner {
+            return Err(AppError::NotFound(format!("저장소 {id}")).into());
+        }
+    }
+    Ok(repo)
 }

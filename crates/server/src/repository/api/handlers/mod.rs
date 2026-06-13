@@ -20,56 +20,62 @@ use serde::Deserialize;
 use shared::protocol::{PullResponse, PushRequest, PushResponse};
 use uuid::Uuid;
 
+use crate::auth::{require_owner, require_read, AuthUser, MaybeAuthUser};
 use crate::error::ApiError;
 use crate::repository::application::dto::{
     BlobContentDto, BranchDto, CommitSummary, CreateRepositoryRequest, RepositoryResponse,
     TreeEntryDto,
 };
 use crate::repository::application::use_cases::{
-    browse_tree, create_repository, delete_repository, get_repository, list_branches,
-    list_commits, list_repositories, pull, push, read_blob,
+    browse_tree, create_repository, delete_repository, list_branches, list_commits,
+    list_repositories, pull, push, read_blob,
 };
 use crate::repository::domain::value_objects::{RepositoryId, UserId};
 use crate::state::AppState;
 
-/// 시드 테스트 유저(`00000000-0000-0000-0000-000000000001`).
-///
-/// TODO(Phase User): 인증 도입 시 요청에서 인증된 사용자 ID로 교체.
-const SEEDED_OWNER_ID: Uuid = Uuid::from_u128(1);
-
-/// POST /api/repositories — 저장소 생성
+/// POST /api/repositories — 저장소 생성 (인증 필요, 소유자=인증 사용자)
 pub async fn create_handler(
     State(state): State<AppState>,
+    auth: AuthUser,
     Json(request): Json<CreateRepositoryRequest>,
 ) -> Result<(StatusCode, Json<RepositoryResponse>), ApiError> {
-    let owner_id = UserId::from_uuid(SEEDED_OWNER_ID);
+    let owner_id = UserId::from_uuid(auth.user_id);
     let repository = create_repository(state.repositories.as_ref(), owner_id, request).await?;
     Ok((StatusCode::CREATED, Json(repository.into())))
 }
 
-/// GET /api/repositories — 저장소 목록
+/// GET /api/repositories — 저장소 목록 (공개 + 본인 비공개)
 pub async fn list_handler(
     State(state): State<AppState>,
+    MaybeAuthUser(auth): MaybeAuthUser,
 ) -> Result<Json<Vec<RepositoryResponse>>, ApiError> {
+    let uid = auth.map(|a| a.user_id);
     let repositories = list_repositories(state.repositories.as_ref()).await?;
-    Ok(Json(repositories.into_iter().map(Into::into).collect()))
+    let visible = repositories
+        .into_iter()
+        .filter(|r| !r.is_private() || Some(r.owner_id().as_uuid()) == uid)
+        .map(Into::into)
+        .collect();
+    Ok(Json(visible))
 }
 
-/// GET /api/repositories/:id — 저장소 조회
+/// GET /api/repositories/:id — 저장소 조회 (공개읽기)
 pub async fn get_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: MaybeAuthUser,
 ) -> Result<Json<RepositoryResponse>, ApiError> {
-    let repository =
-        get_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
+    let repository = require_read(&state, id, &auth).await?;
     Ok(Json(repository.into()))
 }
 
-/// DELETE /api/repositories/:id — 저장소 삭제
+/// DELETE /api/repositories/:id — 저장소 삭제 (소유자만)
 pub async fn delete_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: AuthUser,
 ) -> Result<StatusCode, ApiError> {
+    require_owner(&state, id, &auth).await?;
     delete_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -85,13 +91,14 @@ fn default_branch() -> String {
     "main".to_string()
 }
 
-/// POST /api/repositories/:id/push — 객체 번들 업로드 + 브랜치 갱신
+/// POST /api/repositories/:id/push — 객체 번들 업로드 + 브랜치 갱신 (소유자만)
 pub async fn push_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: AuthUser,
     Json(request): Json<PushRequest>,
 ) -> Result<Json<PushResponse>, ApiError> {
-    ensure_repo_exists(&state, id).await?;
+    require_owner(&state, id, &auth).await?;
     let response = push(
         state.objects.as_ref(),
         state.blobs.as_ref(),
@@ -102,13 +109,14 @@ pub async fn push_handler(
     Ok(Json(response))
 }
 
-/// GET /api/repositories/:id/pull?branch=main — 객체 번들 다운로드
+/// GET /api/repositories/:id/pull?branch=main — 객체 번들 다운로드 (공개읽기)
 pub async fn pull_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: MaybeAuthUser,
     Query(query): Query<BranchQuery>,
 ) -> Result<Json<PullResponse>, ApiError> {
-    ensure_repo_exists(&state, id).await?;
+    require_read(&state, id, &auth).await?;
     let response = pull(
         state.objects.as_ref(),
         state.blobs.as_ref(),
@@ -117,12 +125,6 @@ pub async fn pull_handler(
     )
     .await?;
     Ok(Json(response))
-}
-
-/// 저장소 존재 확인 (없으면 NotFound → 404)
-async fn ensure_repo_exists(state: &AppState, id: Uuid) -> Result<(), ApiError> {
-    get_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
-    Ok(())
 }
 
 // -----------------------------------------------------------------------------
@@ -147,21 +149,25 @@ pub struct TreeQuery {
     pub path: String,
 }
 
-/// GET /api/repositories/:id/branches
+/// GET /api/repositories/:id/branches (공개읽기)
 pub async fn branches_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: MaybeAuthUser,
 ) -> Result<Json<Vec<BranchDto>>, ApiError> {
+    require_read(&state, id, &auth).await?;
     let branches = list_branches(state.objects.as_ref(), RepositoryId::from_uuid(id)).await?;
     Ok(Json(branches.into_iter().map(Into::into).collect()))
 }
 
-/// GET /api/repositories/:id/commits?branch=&limit=
+/// GET /api/repositories/:id/commits?branch=&limit= (공개읽기)
 pub async fn commits_handler(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
+    auth: MaybeAuthUser,
     Query(query): Query<CommitsQuery>,
 ) -> Result<Json<Vec<CommitSummary>>, ApiError> {
+    require_read(&state, id, &auth).await?;
     let commits = list_commits(
         state.objects.as_ref(),
         RepositoryId::from_uuid(id),
@@ -172,12 +178,14 @@ pub async fn commits_handler(
     Ok(Json(commits.into_iter().map(Into::into).collect()))
 }
 
-/// GET /api/repositories/:id/tree/:commit_hash?path=
+/// GET /api/repositories/:id/tree/:commit_hash?path= (공개읽기)
 pub async fn tree_handler(
     State(state): State<AppState>,
     Path((id, commit_hash)): Path<(Uuid, String)>,
+    auth: MaybeAuthUser,
     Query(query): Query<TreeQuery>,
 ) -> Result<Json<Vec<TreeEntryDto>>, ApiError> {
+    require_read(&state, id, &auth).await?;
     let entries = browse_tree(
         state.objects.as_ref(),
         RepositoryId::from_uuid(id),
@@ -188,11 +196,13 @@ pub async fn tree_handler(
     Ok(Json(entries.into_iter().map(Into::into).collect()))
 }
 
-/// GET /api/repositories/:id/blob/:hash
+/// GET /api/repositories/:id/blob/:hash (공개읽기)
 pub async fn blob_handler(
     State(state): State<AppState>,
     Path((id, hash)): Path<(Uuid, String)>,
+    auth: MaybeAuthUser,
 ) -> Result<Json<BlobContentDto>, ApiError> {
+    require_read(&state, id, &auth).await?;
     let bytes = read_blob(state.blobs.as_ref(), RepositoryId::from_uuid(id), &hash).await?;
     Ok(Json(BlobContentDto::from_bytes(hash, bytes)))
 }
