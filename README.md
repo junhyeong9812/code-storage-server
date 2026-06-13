@@ -104,7 +104,25 @@ cd my-project
 echo "hello" > hello.txt
 cts add hello.txt
 cts commit -m "first commit"
+cts remote http://127.0.0.1:8080 my-project   # 서버에 저장소 생성 + 원격 설정
 cts push
+
+# 5. Web UI (코드 브라우저)
+cd frontend
+npm install
+npm run dev            # http://localhost:5173 (서버 API 는 127.0.0.1:8080)
+```
+
+## CI/CD (서버 빌드)
+
+저장소 루트에 `cts.build.sh` 를 두고 push 하면, 해당 커밋에 대해 서버가
+빌드를 실행한다.
+
+```bash
+# 커밋 빌드 트리거 (REST)
+curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
+  -H 'Content-Type: application/json' \
+  -d '{"commit_hash":"<hash>"}'
 ```
 
 ## 개발 로드맵
@@ -115,7 +133,7 @@ cts push
 - [x] Phase 4: Push/Pull (서버 연동)
 - [x] Phase 5: Branch (브랜치 관리)
 - [x] Phase 6: Build (CI/CD)
-- [ ] Phase 7: Web UI
+- [x] Phase 7: Web UI
 
 ## 라이선스
 
