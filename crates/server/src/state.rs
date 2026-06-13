@@ -13,17 +13,29 @@
 
 use std::sync::Arc;
 
-use crate::repository::domain::ports::RepositoryRepository;
+use crate::repository::domain::ports::{BlobStorage, ObjectRepository, RepositoryRepository};
 
 /// 핸들러에 주입되는 공유 상태
 #[derive(Clone)]
 pub struct AppState {
-    /// 저장소 영속화 포트
+    /// 저장소 메타데이터 영속화 포트
     pub repositories: Arc<dyn RepositoryRepository>,
+    /// 객체 그래프(blob메타/tree/commit/branch) 영속화 포트
+    pub objects: Arc<dyn ObjectRepository>,
+    /// Blob 내용 저장소 포트
+    pub blobs: Arc<dyn BlobStorage>,
 }
 
 impl AppState {
-    pub fn new(repositories: Arc<dyn RepositoryRepository>) -> Self {
-        Self { repositories }
+    pub fn new(
+        repositories: Arc<dyn RepositoryRepository>,
+        objects: Arc<dyn ObjectRepository>,
+        blobs: Arc<dyn BlobStorage>,
+    ) -> Self {
+        Self {
+            repositories,
+            objects,
+            blobs,
+        }
     }
 }

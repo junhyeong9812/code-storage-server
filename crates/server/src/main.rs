@@ -20,7 +20,9 @@ use anyhow::Context;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::EnvFilter;
 
-use server::repository::infrastructure::adapters::PgRepositoryRepository;
+use server::repository::infrastructure::adapters::{
+    FileBlobStorage, PgObjectRepository, PgRepositoryRepository,
+};
 use server::state::AppState;
 
 #[tokio::main]
@@ -45,8 +47,12 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("PostgreSQL 연결 성공");
 
     // 4. 어댑터 → AppState
-    let repositories = Arc::new(PgRepositoryRepository::new(pool));
-    let state = AppState::new(repositories);
+    let storage_path =
+        std::env::var("STORAGE_PATH").unwrap_or_else(|_| "./storage".to_string());
+    let repositories = Arc::new(PgRepositoryRepository::new(pool.clone()));
+    let objects = Arc::new(PgObjectRepository::new(pool));
+    let blobs = Arc::new(FileBlobStorage::new(storage_path));
+    let state = AppState::new(repositories, objects, blobs);
 
     // 5. 라우터 빌드 + 서버 실행
     let app = server::app(state);

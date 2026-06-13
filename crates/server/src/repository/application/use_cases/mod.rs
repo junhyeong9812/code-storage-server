@@ -21,8 +21,12 @@ pub mod create_repository;
 pub mod delete_repository;
 pub mod get_repository;
 pub mod list_repositories;
+pub mod pull;
+pub mod push;
 
 pub use create_repository::create_repository;
 pub use delete_repository::delete_repository;
 pub use get_repository::get_repository;
 pub use list_repositories::list_repositories;
+pub use pull::pull;
+pub use push::push;

@@ -30,4 +30,8 @@ pub fn routes() -> Router<AppState> {
             "/repositories/:id",
             get(handlers::get_handler).delete(handlers::delete_handler),
         )
+        // Push: 객체 번들 업로드 + 브랜치 갱신
+        .route("/repositories/:id/push", post(handlers::push_handler))
+        // Pull: 객체 번들 다운로드
+        .route("/repositories/:id/pull", get(handlers::pull_handler))
 }

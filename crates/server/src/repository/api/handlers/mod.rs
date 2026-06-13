@@ -12,16 +12,18 @@
 // =============================================================================
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     Json,
 };
+use serde::Deserialize;
+use shared::protocol::{PullResponse, PushRequest, PushResponse};
 use uuid::Uuid;
 
 use crate::error::ApiError;
 use crate::repository::application::dto::{CreateRepositoryRequest, RepositoryResponse};
 use crate::repository::application::use_cases::{
-    create_repository, delete_repository, get_repository, list_repositories,
+    create_repository, delete_repository, get_repository, list_repositories, pull, push,
 };
 use crate::repository::domain::value_objects::{RepositoryId, UserId};
 use crate::state::AppState;
@@ -66,4 +68,55 @@ pub async fn delete_handler(
 ) -> Result<StatusCode, ApiError> {
     delete_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// 브랜치 쿼리 파라미터 (?branch=main)
+#[derive(Debug, Deserialize)]
+pub struct BranchQuery {
+    #[serde(default = "default_branch")]
+    pub branch: String,
+}
+
+fn default_branch() -> String {
+    "main".to_string()
+}
+
+/// POST /api/repositories/:id/push — 객체 번들 업로드 + 브랜치 갱신
+pub async fn push_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Json(request): Json<PushRequest>,
+) -> Result<Json<PushResponse>, ApiError> {
+    ensure_repo_exists(&state, id).await?;
+    let response = push(
+        state.objects.as_ref(),
+        state.blobs.as_ref(),
+        RepositoryId::from_uuid(id),
+        request,
+    )
+    .await?;
+    Ok(Json(response))
+}
+
+/// GET /api/repositories/:id/pull?branch=main — 객체 번들 다운로드
+pub async fn pull_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Query(query): Query<BranchQuery>,
+) -> Result<Json<PullResponse>, ApiError> {
+    ensure_repo_exists(&state, id).await?;
+    let response = pull(
+        state.objects.as_ref(),
+        state.blobs.as_ref(),
+        RepositoryId::from_uuid(id),
+        &query.branch,
+    )
+    .await?;
+    Ok(Json(response))
+}
+
+/// 저장소 존재 확인 (없으면 NotFound → 404)
+async fn ensure_repo_exists(state: &AppState, id: Uuid) -> Result<(), ApiError> {
+    get_repository(state.repositories.as_ref(), RepositoryId::from_uuid(id)).await?;
+    Ok(())
 }
