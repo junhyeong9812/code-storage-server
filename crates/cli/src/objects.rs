@@ -18,7 +18,7 @@
 // =============================================================================
 
 use anyhow::{bail, Context, Result};
-use cts_core::{compress, decompress, Blob, Commit, Tree};
+use cts_core::{compress, decompress, Blob, Commit, Tree, TreeEntry};
 
 use crate::repo::Repo;
 
@@ -93,4 +93,23 @@ pub fn write_commit(repo: &Repo, commit: &mut Commit) -> Result<String> {
     let body = serde_json::to_vec(commit).context("commit 직렬화 실패")?;
     write_object(repo, "commit", &hash, &body)?;
     Ok(hash)
+}
+
+/// Commit 객체를 읽는다.
+pub fn read_commit(repo: &Repo, id: &str) -> Result<Commit> {
+    let (obj_type, body) = read_object(repo, id)?;
+    if obj_type != "commit" {
+        bail!("commit 객체가 아닙니다: {id} (type={obj_type})");
+    }
+    serde_json::from_slice(&body).context("commit 역직렬화 실패")
+}
+
+/// Tree 객체를 읽는다.
+pub fn read_tree(repo: &Repo, id: &str) -> Result<Tree> {
+    let (obj_type, body) = read_object(repo, id)?;
+    if obj_type != "tree" {
+        bail!("tree 객체가 아닙니다: {id} (type={obj_type})");
+    }
+    let entries: Vec<TreeEntry> = serde_json::from_slice(&body).context("tree 역직렬화 실패")?;
+    Ok(Tree::with_entries(entries))
 }

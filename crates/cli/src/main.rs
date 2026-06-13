@@ -71,8 +71,8 @@ fn main() -> Result<()> {
         Commands::Init { path } => commands::init::run(path)?,
         Commands::Add { files } => commands::add::run(files)?,
         Commands::Commit { message } => commands::commit::run(message)?,
-        Commands::Status => todo_phase("status", 3),
-        Commands::Log => todo_phase("log", 3),
+        Commands::Status => commands::status::run()?,
+        Commands::Log => commands::log::run()?,
         Commands::Push => todo_phase("push", 4),
         Commands::Pull => todo_phase("pull", 4),
         Commands::Clone { url } => {
