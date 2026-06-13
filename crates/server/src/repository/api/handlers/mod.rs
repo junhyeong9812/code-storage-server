@@ -20,17 +20,20 @@ use serde::Deserialize;
 use shared::protocol::{PullResponse, PushRequest, PushResponse};
 use uuid::Uuid;
 
-use crate::auth::{require_owner, require_read, require_write, AuthUser, MaybeAuthUser};
+use crate::auth::{
+    require_admin, require_owner, require_read, require_write, AuthUser, MaybeAuthUser,
+};
 use crate::error::ApiError;
 use crate::repository::application::dto::{
-    BlobContentDto, BranchDto, CommitSummary, CreateRepositoryRequest, RepositoryResponse,
-    TreeEntryDto,
+    AddCollaboratorRequest, BlobContentDto, BranchDto, CollaboratorDto, CommitSummary,
+    CreateRepositoryRequest, RepositoryResponse, TreeEntryDto,
 };
 use crate::repository::application::use_cases::{
-    browse_tree, create_repository, delete_repository, list_branches, list_commits,
-    list_repositories, pull, push, read_blob,
+    add_collaborator, browse_tree, create_repository, delete_repository, list_branches,
+    list_collaborators, list_commits, list_repositories, pull, push, read_blob,
+    remove_collaborator,
 };
-use crate::repository::domain::value_objects::{RepositoryId, UserId};
+use crate::repository::domain::value_objects::{RepositoryId, Role, UserId};
 use crate::state::AppState;
 
 /// POST /api/repositories — 저장소 생성 (인증 필요, 소유자=인증 사용자)
@@ -205,4 +208,57 @@ pub async fn blob_handler(
     require_read(&state, id, &auth).await?;
     let bytes = read_blob(state.blobs.as_ref(), RepositoryId::from_uuid(id), &hash).await?;
     Ok(Json(BlobContentDto::from_bytes(hash, bytes)))
+}
+
+// -----------------------------------------------------------------------------
+// 협업자 관리 (admin 권한)
+// -----------------------------------------------------------------------------
+
+/// POST /api/repositories/:id/collaborators — 협업자 추가/역할 변경 (admin)
+pub async fn add_collaborator_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    auth: AuthUser,
+    Json(req): Json<AddCollaboratorRequest>,
+) -> Result<StatusCode, ApiError> {
+    require_admin(&state, id, &auth).await?;
+    let role = match req.role.as_deref() {
+        Some(r) => Role::from_db(r)?,
+        None => Role::Write,
+    };
+    add_collaborator(
+        state.collaborators.as_ref(),
+        RepositoryId::from_uuid(id),
+        &req.username,
+        role,
+    )
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// DELETE /api/repositories/:id/collaborators/:username — 협업자 제거 (admin)
+pub async fn remove_collaborator_handler(
+    State(state): State<AppState>,
+    Path((id, username)): Path<(Uuid, String)>,
+    auth: AuthUser,
+) -> Result<StatusCode, ApiError> {
+    require_admin(&state, id, &auth).await?;
+    remove_collaborator(
+        state.collaborators.as_ref(),
+        RepositoryId::from_uuid(id),
+        &username,
+    )
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// GET /api/repositories/:id/collaborators — 협업자 목록 (읽기)
+pub async fn list_collaborators_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    auth: MaybeAuthUser,
+) -> Result<Json<Vec<CollaboratorDto>>, ApiError> {
+    require_read(&state, id, &auth).await?;
+    let list = list_collaborators(state.collaborators.as_ref(), RepositoryId::from_uuid(id)).await?;
+    Ok(Json(list.into_iter().map(Into::into).collect()))
 }

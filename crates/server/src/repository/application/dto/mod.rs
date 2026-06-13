@@ -17,7 +17,9 @@ use serde::{Deserialize, Serialize};
 use shared::types::{Id, Timestamp};
 
 use crate::repository::domain::entities::Repository;
-use crate::repository::domain::ports::{BranchHead, CommitRecord, TreeEntryRecord};
+use crate::repository::domain::ports::{
+    BranchHead, CollaboratorRecord, CommitRecord, TreeEntryRecord,
+};
 
 /// 저장소 생성 요청
 #[derive(Debug, Deserialize)]
@@ -120,6 +122,33 @@ impl From<TreeEntryRecord> for TreeEntryDto {
             object_type: e.object_type,
             hash: e.child_hash,
             mode: e.mode,
+        }
+    }
+}
+
+/// 협업자 추가 요청
+#[derive(Debug, Deserialize)]
+pub struct AddCollaboratorRequest {
+    pub username: String,
+    /// "read" | "write" | "admin" (기본 write)
+    #[serde(default)]
+    pub role: Option<String>,
+}
+
+/// 협업자 응답
+#[derive(Debug, Serialize)]
+pub struct CollaboratorDto {
+    pub user_id: Id,
+    pub username: String,
+    pub role: String,
+}
+
+impl From<CollaboratorRecord> for CollaboratorDto {
+    fn from(c: CollaboratorRecord) -> Self {
+        Self {
+            user_id: c.user_id,
+            username: c.username,
+            role: c.role.as_str().to_string(),
         }
     }
 }

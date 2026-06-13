@@ -18,6 +18,7 @@
 // =============================================================================
 
 pub mod browse;
+pub mod collaborators;
 pub mod create_repository;
 pub mod delete_repository;
 pub mod get_repository;
@@ -26,6 +27,7 @@ pub mod pull;
 pub mod push;
 
 pub use browse::{browse_tree, list_branches, list_commits, read_blob};
+pub use collaborators::{add_collaborator, list_collaborators, remove_collaborator};
 pub use create_repository::create_repository;
 pub use delete_repository::delete_repository;
 pub use get_repository::get_repository;

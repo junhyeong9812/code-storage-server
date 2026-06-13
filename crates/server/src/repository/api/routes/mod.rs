@@ -42,4 +42,13 @@ pub fn routes() -> Router<AppState> {
             get(handlers::tree_handler),
         )
         .route("/repositories/:id/blob/:hash", get(handlers::blob_handler))
+        // 협업자 관리
+        .route(
+            "/repositories/:id/collaborators",
+            post(handlers::add_collaborator_handler).get(handlers::list_collaborators_handler),
+        )
+        .route(
+            "/repositories/:id/collaborators/:username",
+            axum::routing::delete(handlers::remove_collaborator_handler),
+        )
 }
