@@ -128,6 +128,8 @@ GET    /api/repositories/:id/builds/:bid/log   # 빌드 로그(텍스트)
   (command 생략 시 저장소 루트의 `cts.build.sh` 실행)
 - 상태: pending → running → success/failed
 - BuildRunner 는 포트 — 추후 DockerBuildRunner 로 교체 가능
+- **자동 트리거(Phase 12)**: push 성공 후 커밋 루트에 `cts.build.sh` 가 있으면
+  백그라운드(tokio::spawn)로 빌드 자동 실행 (push 응답은 즉시 반환)
 
 ### 초기 설계(미구현, 참고용)
 ```

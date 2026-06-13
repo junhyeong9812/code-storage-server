@@ -148,6 +148,7 @@ curl -X POST http://127.0.0.1:8080/api/repositories/<repo_id>/builds \
 - [x] Phase 9: 협업 권한 (Collaborators) — read/write/admin 역할
 - [x] Phase 10: 토큰 철회/로그아웃 — JWT jti 블랙리스트
 - [x] Phase 11: Web UI 로그인 — zustand + localStorage, 비공개 저장소 표시
+- [x] Phase 12: 빌드 자동 트리거 — push 시 cts.build.sh 있으면 백그라운드 빌드
 
 ## 라이선스
 
