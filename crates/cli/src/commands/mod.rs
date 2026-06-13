@@ -8,7 +8,11 @@
 // =============================================================================
 
 pub mod add;
+pub mod clone;
 pub mod commit;
 pub mod init;
 pub mod log;
+pub mod pull;
+pub mod push;
+pub mod remote;
 pub mod status;

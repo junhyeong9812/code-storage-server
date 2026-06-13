@@ -13,11 +13,14 @@
 // 파일 위치: crates/cli/src/main.rs
 // =============================================================================
 
+mod bundle;
+mod checkout;
 mod config;
 mod commands;
 mod index;
 mod objects;
 mod refs;
+mod remote;
 mod repo;
 
 use anyhow::Result;
@@ -49,13 +52,20 @@ enum Commands {
         #[arg(short, long)]
         message: String,
     },
+    /// Configure or show the remote server
+    Remote {
+        /// Server base URL (e.g. http://127.0.0.1:8080)
+        url: Option<String>,
+        /// Repository name on the server
+        name: Option<String>,
+    },
     /// Push to remote server
     Push,
     /// Pull from remote server
     Pull,
     /// Clone a repository
     Clone {
-        /// Repository URL
+        /// Repository URL (http://host:port/api/repositories/<id>)
         url: String,
     },
     /// Show commit history
@@ -73,18 +83,11 @@ fn main() -> Result<()> {
         Commands::Commit { message } => commands::commit::run(message)?,
         Commands::Status => commands::status::run()?,
         Commands::Log => commands::log::run()?,
-        Commands::Push => todo_phase("push", 4),
-        Commands::Pull => todo_phase("pull", 4),
-        Commands::Clone { url } => {
-            let _ = url;
-            todo_phase("clone", 4);
-        }
+        Commands::Remote { url, name } => commands::remote::run(url, name)?,
+        Commands::Push => commands::push::run()?,
+        Commands::Pull => commands::pull::run()?,
+        Commands::Clone { url } => commands::clone::run(url)?,
     }
 
     Ok(())
-}
-
-/// 아직 구현되지 않은 명령 안내
-fn todo_phase(name: &str, phase: u8) {
-    eprintln!("'cts {name}' 은 아직 구현되지 않았습니다 (Phase {phase}).");
 }

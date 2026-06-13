@@ -79,3 +79,10 @@ serde_json.workspace = true
 # - .context() 로 에러 메시지 추가
 # - main()에서 ? 연산자로 에러 출력
 anyhow.workspace = true
+
+# -----------------------------------------------------------------------------
+# HTTP 클라이언트 (Phase 4: 서버 연동)
+# -----------------------------------------------------------------------------
+# ureq: 동기(blocking) HTTP 클라이언트. CLI 는 동기 흐름이라 가볍게 사용.
+# - json feature: serde 기반 .send_json / .into_json
+ureq = { version = "2", features = ["json"] }

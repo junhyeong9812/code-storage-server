@@ -14,6 +14,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::repo::Repo;
 
+/// 원격 서버 정보
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Remote {
+    /// 서버 베이스 URL (예: http://127.0.0.1:8080)
+    pub url: String,
+    /// 서버 측 저장소 ID (UUID 문자열)
+    pub repo_id: String,
+    /// 저장소 이름 (참고용)
+    #[serde(default)]
+    pub repo_name: Option<String>,
+}
+
 /// 로컬 저장소 설정
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -21,9 +33,9 @@ pub struct Config {
     pub author_name: String,
     /// 커밋 작성자 이메일
     pub author_email: String,
-    /// 원격 서버 URL (Phase 4)
+    /// 원격 서버 (Phase 4) — 'cts remote' 로 설정
     #[serde(default)]
-    pub remote: Option<String>,
+    pub remote: Option<Remote>,
 }
 
 impl Config {
