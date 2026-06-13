@@ -21,13 +21,14 @@ Git 프로토콜이나 라이브러리에 의존하지 않고, 자체 프로토�
 cts init                 # 저장소 초기화
 cts add <file>           # 파일 스테이징
 cts commit -m "message"  # 커밋 생성
+cts branch [name]        # 브랜치 목록 / 생성
+cts checkout [-b] <br>   # 브랜치 전환 (-b: 생성 후 전환)
+cts log                  # 커밋 히스토리
+cts status               # 현재 상태
+cts remote <url> <name>  # 원격 설정 (서버에 저장소 생성)
 cts push                 # 서버에 푸시
 cts pull                 # 서버에서 풀
 cts clone <url>          # 저장소 복제
-cts branch <name>        # 브랜치 생성
-cts checkout <branch>    # 브랜치 전환
-cts log                  # 커밋 히스토리
-cts status               # 현재 상태
 ```
 
 ### Server
@@ -112,7 +113,7 @@ cts push
 - [x] Phase 2: Server (저장소 CRUD)
 - [x] Phase 3: CLI (init, add, commit)
 - [x] Phase 4: Push/Pull (서버 연동)
-- [ ] Phase 5: Branch (브랜치 관리)
+- [x] Phase 5: Branch (브랜치 관리)
 - [ ] Phase 6: Build (CI/CD)
 - [ ] Phase 7: Web UI
 
