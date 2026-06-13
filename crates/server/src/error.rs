@@ -36,6 +36,7 @@ impl IntoResponse for ApiError {
             AppError::AlreadyExists(msg) => (StatusCode::CONFLICT, msg.clone()),
             AppError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
+            AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg.clone()),
             AppError::HashMismatch { .. } => (StatusCode::BAD_REQUEST, self.0.to_string()),
             // Storage/Internal 은 내부 사정이므로 상세 메시지는 로그로, 응답은 일반화
             AppError::Storage(msg) | AppError::Internal(msg) => {
