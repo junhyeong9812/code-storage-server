@@ -82,6 +82,11 @@ enum Commands {
         server: String,
         username: String,
     },
+    /// Log out (revoke token + clear stored credential)
+    Logout {
+        /// Server base URL
+        server: String,
+    },
     /// Configure or show the remote server
     Remote {
         /// Server base URL (e.g. http://127.0.0.1:8080)
@@ -140,6 +145,7 @@ fn main() -> Result<()> {
             email,
         } => commands::login::register(server, username, email)?,
         Commands::Login { server, username } => commands::login::login(server, username)?,
+        Commands::Logout { server } => commands::login::logout(server)?,
         Commands::Remote { url, name } => commands::remote::run(url, name)?,
         Commands::Collab { action } => {
             let action = match action {

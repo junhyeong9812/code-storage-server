@@ -85,6 +85,13 @@ pub fn login(server: &str, username: &str, password: &str) -> Result<AuthRespons
         .context("로그인 응답 파싱 실패")
 }
 
+/// 로그아웃 (서버에서 현재 토큰 철회)
+pub fn logout(server: &str, token: &str) -> Result<()> {
+    let url = format!("{}/api/auth/logout", base(server));
+    auth(ureq::post(&url), Some(token)).call().map_err(map_err)?;
+    Ok(())
+}
+
 // -----------------------------------------------------------------------------
 // 저장소
 // -----------------------------------------------------------------------------

@@ -68,6 +68,10 @@ impl Credentials {
     pub fn set(&mut self, server: &str, cred: ServerCred) {
         self.servers.insert(normalize(server), cred);
     }
+
+    pub fn remove(&mut self, server: &str) {
+        self.servers.remove(&normalize(server));
+    }
 }
 
 /// 특정 서버의 토큰 조회 (없으면 None)

@@ -39,6 +39,18 @@ pub fn login(server: String, username: String) -> Result<()> {
     Ok(())
 }
 
+pub fn logout(server: String) -> Result<()> {
+    let mut creds = Credentials::load()?;
+    if let Some(cred) = creds.get(&server).cloned() {
+        // 서버 측 토큰 철회 (실패해도 로컬은 정리)
+        let _ = net::logout(&server, &cred.token);
+    }
+    creds.remove(&server);
+    creds.save()?;
+    println!("로그아웃: {server}");
+    Ok(())
+}
+
 fn store(server: &str, token: &str, username: &str) -> Result<()> {
     let mut creds = Credentials::load()?;
     creds.set(
