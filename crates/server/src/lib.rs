@@ -14,6 +14,7 @@
 // app(state) 함수가 전체 라우터를 조립한다. main.rs 와 분리해 테스트하기 쉽게 한다.
 // =============================================================================
 
+pub mod auth;
 pub mod error;
 pub mod state;
 
@@ -32,7 +33,9 @@ use crate::state::AppState;
 /// - `GET /health`            : 헬스체크
 /// - `/api/...`               : 도메인별 REST API
 pub fn app(state: AppState) -> Router {
-    let api = repository::api::routes::routes().merge(build::api::routes::routes());
+    let api = repository::api::routes::routes()
+        .merge(build::api::routes::routes())
+        .merge(user::api::routes::routes());
     Router::new()
         .route("/health", get(health))
         .nest("/api", api)

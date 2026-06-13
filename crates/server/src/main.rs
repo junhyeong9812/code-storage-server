@@ -27,6 +27,10 @@ use server::repository::infrastructure::adapters::{
     FileBlobStorage, PgObjectRepository, PgRepositoryRepository,
 };
 use server::state::AppState;
+use server::user::domain::ports::{PasswordHasher, TokenService, UserRepository};
+use server::user::infrastructure::adapters::{
+    BcryptPasswordHasher, JwtTokenService, PgUserRepository,
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -58,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(PgRepositoryRepository::new(pool.clone()));
     let objects: Arc<dyn ObjectRepository> = Arc::new(PgObjectRepository::new(pool.clone()));
     let blobs: Arc<dyn BlobStorage> = Arc::new(FileBlobStorage::new(storage_path.clone()));
-    let builds: Arc<dyn BuildRepository> = Arc::new(PgBuildRepository::new(pool));
+    let builds: Arc<dyn BuildRepository> = Arc::new(PgBuildRepository::new(pool.clone()));
     let build_runner: Arc<dyn BuildRunner> = Arc::new(ShellBuildRunner::new(
         objects.clone(),
         blobs.clone(),
@@ -66,7 +70,25 @@ async fn main() -> anyhow::Result<()> {
         storage_base.join("builds").join("work"),
     ));
 
-    let state = AppState::new(repositories, objects, blobs, builds, build_runner);
+    // 인증 (Phase 8)
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        tracing::warn!("JWT_SECRET 미설정 — 개발용 기본 키 사용(운영에서는 반드시 설정)");
+        "cts-dev-insecure-secret-change-me".to_string()
+    });
+    let users: Arc<dyn UserRepository> = Arc::new(PgUserRepository::new(pool));
+    let password_hasher: Arc<dyn PasswordHasher> = Arc::new(BcryptPasswordHasher);
+    let tokens: Arc<dyn TokenService> = Arc::new(JwtTokenService::new(jwt_secret.into_bytes()));
+
+    let state = AppState {
+        repositories,
+        objects,
+        blobs,
+        builds,
+        build_runner,
+        users,
+        password_hasher,
+        tokens,
+    };
 
     // 5. 라우터 빌드 + 서버 실행
     let app = server::app(state);

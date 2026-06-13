@@ -1,8 +1,25 @@
 // =============================================================================
-// User API 라우트
+// User API 라우트 (routes/mod.rs)
+// =============================================================================
+//
+//   POST /api/auth/register
+//   POST /api/auth/login
+//   GET  /api/users/me
+//
+// 파일 위치: crates/server/src/user/api/routes/mod.rs
 // =============================================================================
 
-// TODO: 구현 예정
-// POST /api/auth/register
-// POST /api/auth/login
-// GET  /api/users/me
+use axum::{
+    routing::{get, post},
+    Router,
+};
+
+use super::handlers;
+use crate::state::AppState;
+
+pub fn routes() -> Router<AppState> {
+    Router::new()
+        .route("/auth/register", post(handlers::register_handler))
+        .route("/auth/login", post(handlers::login_handler))
+        .route("/users/me", get(handlers::me_handler))
+}
