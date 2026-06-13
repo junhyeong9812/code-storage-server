@@ -23,7 +23,9 @@ use uuid::Uuid;
 use crate::auth::{
     require_admin, require_owner, require_read, require_write, AuthUser, MaybeAuthUser,
 };
+use crate::build::application::use_cases::run_build;
 use crate::error::ApiError;
+use crate::repository::domain::ports::ObjectRepository;
 use crate::repository::application::dto::{
     AddCollaboratorRequest, BlobContentDto, BranchDto, CollaboratorDto, CommitSummary,
     CreateRepositoryRequest, RepositoryResponse, TreeEntryDto,
@@ -109,7 +111,38 @@ pub async fn push_handler(
         request,
     )
     .await?;
+    // 자동 빌드: 커밋에 cts.build.sh 가 있으면 백그라운드로 실행
+    maybe_auto_build(&state, id, &response.commit_hash).await;
     Ok(Json(response))
+}
+
+/// 푸시된 커밋 루트에 cts.build.sh 가 있으면 백그라운드 빌드를 띄운다.
+async fn maybe_auto_build(state: &AppState, repo_id: Uuid, commit_hash: &str) {
+    let repo = RepositoryId::from_uuid(repo_id);
+    let has_script = match state.objects.get_commit(repo, commit_hash).await {
+        Ok(Some(commit)) => state
+            .objects
+            .get_tree_entries(repo, &commit.tree_hash)
+            .await
+            .map(|entries| {
+                entries
+                    .iter()
+                    .any(|e| e.name == "cts.build.sh" && e.object_type == "blob")
+            })
+            .unwrap_or(false),
+        _ => false,
+    };
+    if !has_script {
+        return;
+    }
+    let builds = state.builds.clone();
+    let runner = state.build_runner.clone();
+    let commit = commit_hash.to_string();
+    tokio::spawn(async move {
+        if let Err(e) = run_build(builds.as_ref(), runner.as_ref(), repo_id, &commit, None).await {
+            tracing::warn!(error = %e, "자동 빌드 실패");
+        }
+    });
 }
 
 /// GET /api/repositories/:id/pull?branch=main — 객체 번들 다운로드 (공개읽기)
