@@ -32,6 +32,17 @@ CREATE TABLE IF NOT EXISTS repositories (
 );
 
 -- ---------------------------------------------------------------------------
+-- repository_collaborators (협업자 — Phase 9)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS repository_collaborators (
+    repository_id UUID NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(10) NOT NULL CHECK (role IN ('read', 'write', 'admin')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (repository_id, user_id)
+);
+
+-- ---------------------------------------------------------------------------
 -- blobs (파일 내용)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS blobs (

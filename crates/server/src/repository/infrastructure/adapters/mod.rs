@@ -13,9 +13,11 @@
 // =============================================================================
 
 pub mod file_blob_storage;
+pub mod postgres_collaborator_repository;
 pub mod postgres_object_repository;
 pub mod postgres_repository_repository;
 
 pub use file_blob_storage::FileBlobStorage;
+pub use postgres_collaborator_repository::PgCollaboratorRepository;
 pub use postgres_object_repository::PgObjectRepository;
 pub use postgres_repository_repository::PgRepositoryRepository;

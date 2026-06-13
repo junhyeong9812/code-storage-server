@@ -6,8 +6,10 @@ pub mod repository_repository;
 pub mod commit_repository;
 pub mod blob_storage;
 pub mod object_repository;
+pub mod collaborator_repository;
 
 pub use repository_repository::RepositoryRepository;
 pub use commit_repository::CommitRepository;
 pub use blob_storage::BlobStorage;
 pub use object_repository::{BranchHead, CommitRecord, ObjectRepository, TreeEntryRecord};
+pub use collaborator_repository::{CollaboratorRecord, CollaboratorRepository};
