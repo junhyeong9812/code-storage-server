@@ -72,3 +72,36 @@ impl Index {
         self.entries.iter().find(|e| e.path == path)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entry(path: &str, hash: &str) -> IndexEntry {
+        IndexEntry {
+            path: path.to_string(),
+            hash: hash.to_string(),
+            mode: "100644".to_string(),
+            size: 1,
+        }
+    }
+
+    #[test]
+    fn upsert_adds_then_replaces() {
+        let mut index = Index::new();
+        index.upsert(entry("a.txt", "h1"));
+        index.upsert(entry("b.txt", "h2"));
+        assert_eq!(index.entries.len(), 2);
+
+        // 같은 경로 재추가 → 교체 (개수 불변, 해시 갱신)
+        index.upsert(entry("a.txt", "h1-new"));
+        assert_eq!(index.entries.len(), 2);
+        assert_eq!(index.get("a.txt").unwrap().hash, "h1-new");
+    }
+
+    #[test]
+    fn get_missing_returns_none() {
+        let index = Index::new();
+        assert!(index.get("nope").is_none());
+    }
+}
